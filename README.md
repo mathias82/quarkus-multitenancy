@@ -1,5 +1,6 @@
 # Quarkus Multi-Tenancy Helper
 
+[![Build](https://github.com/mathias82/quarkus-multitenancy-helper/actions/workflows/build.yml/badge.svg)](https://github.com/mathias82/quarkus-multitenancy-helper/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-experimental-orange)
 ![Java](https://img.shields.io/badge/Java-17%2B-blue)
@@ -126,3 +127,8 @@ Ensure tests pass
 
 A full CONTRIBUTING guide will be added soon.
 
+## Publishing
+
+Planned future steps:
+- Publishing to Maven Central
+- Submitting to Quarkiverse Hub
