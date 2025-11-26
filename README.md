@@ -89,16 +89,15 @@ public class TenantResource {
     }
 }
 
+## Build
+mvn clean install
+
 ## Test It
 curl http://localhost:8080/tenant
 # → public
 
 curl -H "X-Tenant-Id: acme" http://localhost:8080/tenant
 # → acme
-
-
-## Build
-mvn clean install
 
 ## Configuration Reference
 
@@ -151,4 +150,5 @@ A full CONTRIBUTING guide will be added soon.
 Planned future steps:
 - Publishing to Maven Central
 - Submitting to Quarkiverse Hub
+
 
