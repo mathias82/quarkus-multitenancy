@@ -6,7 +6,7 @@
 
     <groupId>io.github.mathias82</groupId>
     <artifactId>quarkus-multitenancy</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
     <packaging>pom</packaging>
 
     <name>Quarkus Multitenancy Extension</name>
@@ -55,6 +55,17 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>io.github.mathias82</groupId>
+                <artifactId>quarkus-multitenancy-runtime</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.mathias82</groupId>
+                <artifactId>quarkus-multitenancy-deployment</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
             <dependency>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-bom</artifactId>
