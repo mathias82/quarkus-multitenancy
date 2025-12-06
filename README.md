@@ -1,52 +1,51 @@
 # Quarkus Multi-Tenancy
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy.svg?label=Maven%20Central)](https://repo.maven.apache.org/maven2/io/github/mathias82/quarkus-multitenancy/)
+[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy)
 [![Build](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml/badge.svg)](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-experimental-orange)
 ![Java](https://img.shields.io/badge/Java-17%2B-blue)
 ![Quarkus](https://img.shields.io/badge/Quarkus-3.x-red)
 
-Opinionated Quarkus extension that provides a simple, lightweight and configurable
+Opinionated Quarkus extension providing a simple, lightweight, and configurable  
 **multi-tenant mechanism** for REST applications.
 
-This extension lets you resolve the current tenant from an HTTP request (header strategy),
-store it in a request-scoped CDI bean, and access it anywhere in your Quarkus application.
+It resolves the current tenant from the incoming HTTP request (header strategy),
+stores it in a request-scoped CDI bean, and exposes it throughout your application.
 
 ---
 
-## About This Project
+## 📌 About This Project
 
-**Quarkus Multi-Tenancy** is an open-source extension designed to simplify tenant resolution
-for Quarkus REST applications.  
-It provides a lightweight, standardized way to identify the current tenant per incoming request using
-strategies such as HTTP headers (default), JWT claims (upcoming), cookies (upcoming), or URL path segments (planned).
+**Quarkus Multi-Tenancy** is an extension designed to standardize and simplify tenant resolution for Quarkus services.
 
-The goal of this project is to offer a reusable, production-ready multi-tenancy foundation that can
-be used in both simple and complex microservice architectures.
+It offers a production-friendly foundation for multi-tenant architectures:
 
-This extension was created to:
+- Consistent tenant identification per request
+- Pluggable resolvers (header now, JWT/cookie/path soon)
+- Minimal boilerplate code
+- Future integration with datasources, caches, identity providers
+- Published on **Maven Central**
 
-- Provide a consistent multi-tenant mechanism across Quarkus services  
-- Reduce boilerplate code for tenant extraction  
-- Enable developers to plug custom tenant resolvers  
-- Support future integration with datasources, caching layers and identity providers  
-- Move toward Quarkiverse compatibility and Maven Central publishing  
-
-
-## Features
-
-- ✔ **TenantContext API** to access the current tenant ID from anywhere  
-- ✔ **Pluggable resolver strategy** (header resolver included, JWT/path/cookie strategies coming soon)  
-- ✔ **Lightweight JAX-RS request filter** that sets tenant per request  
-- ✔ **Strongly typed configuration** via `@ConfigMapping`  
-- ✔ **Zero dependencies other than Quarkus**  
-- ✔ Works with JVM **and** Native Image  
+Next step: *Quarkiverse compatibility* ✔️
 
 ---
 
-## Getting Started
+## ✨ Features
 
-### 1. Add the dependency
+✔ **TenantContext API** for easy tenant access  
+✔ **Pluggable resolver strategy** (header available, JWT/path/cookie upcoming)  
+✔ **Request-scoped CDI TenantContext**  
+✔ **Strongly typed configuration** using `@ConfigMapping`  
+✔ **Works in JVM and Native mode**  
+✔ **Zero external dependencies** besides Quarkus
+
+---
+
+## 🚀 Getting Started
+
+### 1️⃣ Add the dependency
 
 ```xml
 <dependency>
@@ -154,9 +153,4 @@ A full CONTRIBUTING guide will be added soon.
 Planned future steps:
 - Publishing to Maven Central
 - Submitting to Quarkiverse Hub
-
-
-
-
-
 
