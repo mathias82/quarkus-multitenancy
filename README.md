@@ -49,8 +49,8 @@ Next step: *Quarkiverse compatibility* ✔️
 ```xml
 <dependency>
   <groupId>io.github.mathias82</groupId>
-  <artifactId>quarkus-multitenancy</artifactId>
-  <version>0.1.0</version>
+  <artifactId>quarkus-multitenancy-runtime</artifactId>
+  <version>0.1.3</version>
 </dependency>
 
 2️⃣ Configure it
@@ -156,6 +156,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
