@@ -148,11 +148,14 @@ Ensure tests pass
 
 A full CONTRIBUTING guide will be added soon.
 
-## Publishing
+📦 Publishing
 
 Planned future steps:
 - Publishing to Maven Central
 - Submitting to Quarkiverse Hub
 
+⭐ Support the Project
+
+If you find this useful, give the repo a star, it motivates continued development ❤️
 
 
