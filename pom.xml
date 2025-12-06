@@ -10,7 +10,13 @@
     <packaging>pom</packaging>
 
     <name>Quarkus Multitenancy Extension</name>
-    <description>Quarkus Multi-Tenancy extension with pluggable Tenant Resolvers (Header/JWT/etc.)</description>
+    <description>
+        Configurable multi-tenant resolution for Quarkus via headers, JWT, path or cookies.
+
+        Provides a configurable tenant resolution mechanism for Quarkus REST applications,
+        extracting tenant identifiers from HTTP headers, JWT claims, paths or cookies,
+        and making them available through a CDI TenantContext.
+    </description>
     <url>https://github.com/mathias82/quarkus-multitenancy</url>
 
     <licenses>
@@ -61,21 +67,18 @@
     <build>
         <plugins>
 
-            <!-- NEW CENTRAL DEPLOY PLUGIN -->
             <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
                 <version>0.9.0</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <!-- MUST MATCH settings.xml -->
                     <publishingServerId>central</publishingServerId>
                     <autoPublish>true</autoPublish>
                     <waitUntil>published</waitUntil>
                 </configuration>
             </plugin>
 
-            <!-- REQUIRED: attach -sources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -88,7 +91,6 @@
                 </executions>
             </plugin>
 
-            <!-- REQUIRED: attach javadoc -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -104,15 +106,12 @@
         </plugins>
     </build>
 
-    <!-- NO distributionManagement ANYMORE -->
-
     <profiles>
         <profile>
             <id>release</id>
             <build>
                 <plugins>
 
-                    <!-- SIGNING IS REQUIRED FOR CENTRAL -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
