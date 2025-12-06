@@ -50,7 +50,7 @@ This extension was created to:
 
 ```xml
 <dependency>
-  <groupId>io.github.mathiasstavrou</groupId>
+  <groupId>io.github.matthaiosstavrou</groupId>
   <artifactId>quarkus-multitenancy</artifactId>
   <version>0.1.0</version>
 </dependency>
@@ -154,6 +154,7 @@ A full CONTRIBUTING guide will be added soon.
 Planned future steps:
 - Publishing to Maven Central
 - Submitting to Quarkiverse Hub
+
 
 
 
