@@ -1,6 +1,6 @@
-# Quarkus Multi-Tenancy Helper
+# Quarkus Multi-Tenancy
 
-[![Build](https://github.com/mathias82/quarkus-multitenancy-helper/actions/workflows/build.yml/badge.svg)](https://github.com/mathias82/quarkus-multitenancy-helper/actions/workflows/build.yml)
+[![Build](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml/badge.svg)](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-experimental-orange)
 ![Java](https://img.shields.io/badge/Java-17%2B-blue)
@@ -16,7 +16,7 @@ store it in a request-scoped CDI bean, and access it anywhere in your Quarkus ap
 
 ## About This Project
 
-**Quarkus Multi-Tenancy Helper** is an open-source extension designed to simplify tenant resolution
+**Quarkus Multi-Tenancy** is an open-source extension designed to simplify tenant resolution
 for Quarkus REST applications.  
 It provides a lightweight, standardized way to identify the current tenant per incoming request using
 strategies such as HTTP headers (default), JWT claims (upcoming), cookies (upcoming), or URL path segments (planned).
@@ -50,9 +50,9 @@ This extension was created to:
 
 ```xml
 <dependency>
-  <groupId>io.github.mathias82.quarkus</groupId>
-  <artifactId>quarkus-multitenancy-helper-runtime</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <groupId>io.github.mathiasstavrou</groupId>
+  <artifactId>quarkus-multitenancy</artifactId>
+  <version>0.1.0</version>
 </dependency>
 
 ## Configure it:
@@ -150,5 +150,6 @@ A full CONTRIBUTING guide will be added soon.
 Planned future steps:
 - Publishing to Maven Central
 - Submitting to Quarkiverse Hub
+
 
 
