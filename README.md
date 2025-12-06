@@ -9,11 +9,12 @@
 ![Quarkus](https://img.shields.io/badge/Quarkus-3.x-red)
 
 
-Opinionated Quarkus extension providing a simple, lightweight, and configurable  
-**multi-tenant mechanism** for REST applications.
+Quarkus Multi-Tenancy (Tenant Resolver)
 
-It resolves the current tenant from the incoming HTTP request (header strategy),
-stores it in a request-scoped CDI bean, and exposes it throughout your application.
+A Quarkus extension that resolves the current tenant for each HTTP request 
+using pluggable strategies (header, JWT, cookie, path) and exposes it via 
+a request-scoped TenantContext. Ideal for REST microservices that need 
+multi-tenant logic without configuring multiple datasources or OIDC realms.
 
 ---
 
@@ -158,6 +159,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
