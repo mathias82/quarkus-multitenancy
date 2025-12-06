@@ -1,4 +1,4 @@
-# Quarkus Multi-Tenancy
+# Quarkus Multi-Tenancy (Tenant Resolver)
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy)
 [![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-runtime/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-runtime)
@@ -7,9 +7,6 @@
 ![Status](https://img.shields.io/badge/status-experimental-orange)
 ![Java](https://img.shields.io/badge/Java-17%2B-blue)
 ![Quarkus](https://img.shields.io/badge/Quarkus-3.x-red)
-
-
-Quarkus Multi-Tenancy (Tenant Resolver)
 
 A Quarkus extension that resolves the current tenant for each HTTP request 
 using pluggable strategies (header, JWT, cookie, path) and exposes it via 
@@ -159,6 +156,8 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
+
 
 
 
