@@ -1,7 +1,7 @@
 # Quarkus Multi-Tenancy
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy.svg?label=Maven%20Central)](https://repo.maven.apache.org/maven2/io/github/mathias82/quarkus-multitenancy/)
-[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy)
+[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-runtime/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-runtime)
 [![Build](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml/badge.svg)](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-experimental-orange)
@@ -153,4 +153,5 @@ A full CONTRIBUTING guide will be added soon.
 Planned future steps:
 - Publishing to Maven Central
 - Submitting to Quarkiverse Hub
+
 
