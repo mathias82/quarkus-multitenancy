@@ -1,4 +1,4 @@
-package io.github.mathias82.quarkus.multitenant.deployment;
+package io.github.mathias82.quarkus.multitenancy.deployment;
 
 import io.quarkus.runtime.annotations.Recorder;
 

@@ -1,4 +1,4 @@
-package io.github.mathias82.quarkus.multitenant.runtime.context;
+package io.github.mathias82.quarkus.multitenancy.runtime.context;
 
 import java.util.Optional;
 

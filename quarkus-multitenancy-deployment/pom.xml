@@ -9,7 +9,7 @@
     <parent>
         <groupId>io.github.mathias82</groupId>
         <artifactId>quarkus-multitenancy</artifactId>
-        <version>0.1.3</version>
+        <version>0.1.4</version>
     </parent>
 
     <artifactId>quarkus-multitenancy-deployment</artifactId>
