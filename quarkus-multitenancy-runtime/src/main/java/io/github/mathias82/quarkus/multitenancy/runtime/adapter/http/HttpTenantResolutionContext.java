@@ -1,4 +1,4 @@
-package io.github.mathias82.quarkus.multitenancy.test;
+package io.github.mathias82.quarkus.multitenancy.runtime.adapter.http;
 
 import io.github.mathias82.quarkus.multitenancy.runtime.api.TenantResolutionContext;
 import jakarta.ws.rs.core.MultivaluedMap;

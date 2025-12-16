@@ -1,4 +1,4 @@
-package io.github.mathias82.quarkus.multitenancy.runtime.resolution;
+package io.github.mathias82.quarkus.multitenancy.runtime.core;
 
 import io.github.mathias82.quarkus.multitenancy.runtime.api.TenantResolutionContext;
 import io.github.mathias82.quarkus.multitenancy.runtime.api.TenantResolver;

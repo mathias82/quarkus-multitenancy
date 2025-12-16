@@ -1,4 +1,4 @@
-package io.github.mathias82.quarkus.multitenancy.runtime.resolution;
+package io.github.mathias82.quarkus.multitenancy.runtime.core;
 
 import jakarta.enterprise.context.ApplicationScoped;
 

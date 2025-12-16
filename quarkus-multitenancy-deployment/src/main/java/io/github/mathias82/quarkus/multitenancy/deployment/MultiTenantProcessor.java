@@ -2,7 +2,7 @@ package io.github.mathias82.quarkus.multitenancy.deployment;
 
 import io.github.mathias82.quarkus.multitenancy.runtime.context.DefaultTenantContext;
 import io.github.mathias82.quarkus.multitenancy.runtime.filter.TenantFilter;
-import io.github.mathias82.quarkus.multitenancy.runtime.resolution.CompositeTenantResolver;
+import io.github.mathias82.quarkus.multitenancy.runtime.core.CompositeTenantResolver;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;

@@ -1,8 +1,8 @@
 package io.github.mathias82.quarkus.multitenancy.runtime.filter;
 
-import io.github.mathias82.quarkus.multitenancy.test.HttpTenantResolutionContext;
+import io.github.mathias82.quarkus.multitenancy.runtime.adapter.http.HttpTenantResolutionContext;
 import io.github.mathias82.quarkus.multitenancy.runtime.context.TenantContext;
-import io.github.mathias82.quarkus.multitenancy.runtime.resolution.CompositeTenantResolver;
+import io.github.mathias82.quarkus.multitenancy.runtime.core.CompositeTenantResolver;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
