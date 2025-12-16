@@ -14,6 +14,10 @@ public class CompositeTenantResolver {
     @Inject
     List<TenantResolver> resolvers;
 
+    public CompositeTenantResolver(List<TenantResolver> resolvers) {
+        this.resolvers = resolvers;
+    }
+
     public Optional<String> resolve(TenantResolutionContext context) {
         for (TenantResolver resolver : resolvers) {
             Optional<String> tenantId = resolver.resolve(context);

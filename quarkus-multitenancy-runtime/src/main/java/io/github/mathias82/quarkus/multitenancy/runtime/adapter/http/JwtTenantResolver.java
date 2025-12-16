@@ -3,6 +3,7 @@ package io.github.mathias82.quarkus.multitenancy.runtime.adapter.http;
 import io.github.mathias82.quarkus.multitenancy.runtime.api.TenantResolutionContext;
 import io.github.mathias82.quarkus.multitenancy.runtime.api.TenantResolver;
 import io.github.mathias82.quarkus.multitenancy.runtime.config.MultiTenantConfig;
+import io.github.mathias82.quarkus.multitenancy.runtime.config.TenantStrategy;
 import io.vertx.core.json.JsonObject;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -14,6 +15,7 @@ import java.util.Base64;
 import java.util.Optional;
 
 @ApplicationScoped
+@TenantStrategy("jwt")
 @Priority(200)
 public class JwtTenantResolver implements TenantResolver {
 

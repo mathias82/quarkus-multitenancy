@@ -6,16 +6,17 @@
 
     <groupId>io.github.mathias82</groupId>
     <artifactId>quarkus-multitenancy</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.6</version>
     <packaging>pom</packaging>
 
     <name>Quarkus Multitenancy Extension</name>
     <description>
-        Configurable multi-tenant resolution for Quarkus via headers, JWT, path or cookies.
+        Generic and configurable multi-tenant resolution support for Quarkus.
 
-        Provides a configurable tenant resolution mechanism for Quarkus REST applications,
-        extracting tenant identifiers from HTTP headers, JWT claims, paths or cookies,
-        and making them available through a CDI TenantContext.
+        Provides a runtime abstraction for resolving tenant identifiers and making them
+        available through a CDI-managed TenantContext. The abstraction can be integrated
+        by different transports and extensions (such as HTTP or security), while keeping
+        the core tenant resolution mechanism independent of any specific technology.
     </description>
     <url>https://github.com/mathias82/quarkus-multitenancy</url>
 
