@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.mathias82</groupId>
+        <artifactId>quarkus-multitenancy</artifactId>
+        <version>0.1.7</version>
+    </parent>
+
+    <artifactId>quarkus-multitenancy-http-runtime</artifactId>
+
+    <name>Quarkus Multitenancy HTTP Runtime</name>
+
+    <dependencies>
+
+        <!-- Core runtime -->
+        <dependency>
+            <groupId>io.github.mathias82</groupId>
+            <artifactId>quarkus-multitenancy-core-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- REST / JAX-RS -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+
+        <!-- CDI -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc</artifactId>
+        </dependency>
+
+        <!-- JSON (JWT payload decoding) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jackson</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>
