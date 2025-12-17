@@ -14,9 +14,9 @@ public class MultiTenancyHttpProcessor {
     ConfigClassBuildItem registerHttpConfig() {
         return new ConfigClassBuildItem(
                 HttpTenantConfig.class,
-                Set.of(),                  // configComponentInterfaces
-                Set.of(),                  // types
-                Set.of(),                  // generatedClasses
+                Set.of(),
+                Set.of(),
+                Set.of(),
                 "quarkus.multi-tenant.http",
                 ConfigClassBuildItem.Kind.MAPPING
         );
