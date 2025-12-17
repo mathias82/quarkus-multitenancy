@@ -24,13 +24,13 @@ public class TenantFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
+        System.out.println(">>> Incoming X-Tenant header: " + requestContext.getHeaderString("X-Tenant"));
 
-        HttpTenantResolutionContext ctx =
-                new HttpTenantResolutionContext(requestContext);
-
+        HttpTenantResolutionContext ctx = new HttpTenantResolutionContext(requestContext);
         Optional<String> tenant = resolver.resolve(ctx);
-        if (tenant.isPresent()) {
-            tenantContext.setTenantId(tenant.get());
-        }
+
+        System.out.println(">>> Resolver returned: " + tenant.orElse("<none>"));
+
+        tenantContext.setTenantId(tenant.orElse("public"));
     }
 }

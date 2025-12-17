@@ -6,7 +6,7 @@ import io.github.mathias82.quarkus.multitenancy.core.runtime.config.TenantStrate
 import io.github.mathias82.quarkus.multitenancy.http.runtime.config.HttpTenantConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.container.ContainerRequestContext;
 
 import java.util.Optional;
 
@@ -22,25 +22,18 @@ public class HeaderTenantResolver implements TenantResolver {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Optional<String> resolve(TenantResolutionContext context) {
-
-        Optional<MultivaluedMap> raw =
-                context.get(MultivaluedMap.class);
-
-        if (raw.isEmpty()) {
+        Optional<ContainerRequestContext> reqOpt = context.get(ContainerRequestContext.class);
+        if (reqOpt.isEmpty()) {
             return Optional.empty();
         }
 
-        MultivaluedMap<String, String> headers =
-                (MultivaluedMap<String, String>) raw.get();
-
-        String value = headers.getFirst(config.headerName());
-
-        if (value == null || value.isBlank()) {
+        ContainerRequestContext req = reqOpt.get();
+        String header = req.getHeaderString(config.headerName());
+        if (header == null || header.isBlank()) {
             return Optional.empty();
         }
 
-        return Optional.of(value);
+        return Optional.of(header.trim());
     }
 }

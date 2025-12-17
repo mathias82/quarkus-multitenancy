@@ -18,6 +18,11 @@ public class HttpTenantResolutionContext implements TenantResolutionContext {
         if (type.isInstance(requestContext)) {
             return Optional.of(type.cast(requestContext));
         }
+
+        if (type.getName().equals("jakarta.ws.rs.core.MultivaluedMap")) {
+            return Optional.of((T) requestContext.getHeaders());
+        }
+
         return Optional.empty();
     }
 }

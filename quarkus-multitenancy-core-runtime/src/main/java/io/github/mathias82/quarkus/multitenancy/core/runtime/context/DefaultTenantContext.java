@@ -1,6 +1,9 @@
 package io.github.mathias82.quarkus.multitenancy.core.runtime.context;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.Typed;
 
 import java.util.Optional;
 

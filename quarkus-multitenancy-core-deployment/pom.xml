@@ -1,10 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <name>Quarkus Multitenancy Core Deployment</name>
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>io.github.mathias82</groupId>
@@ -13,20 +12,27 @@
     </parent>
 
     <artifactId>quarkus-multitenancy-core-deployment</artifactId>
+    <name>Quarkus Multitenancy Core - Deployment</name>
+    <packaging>jar</packaging>
 
     <dependencies>
+        <!-- ✅ runtime link -->
         <dependency>
-            <groupId>io.github.mathias82</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>quarkus-multitenancy-core-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- ✅ build-time deps -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-core-deployment</artifactId>
         </dependency>
+
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc-deployment</artifactId>
         </dependency>
     </dependencies>
+
 </project>

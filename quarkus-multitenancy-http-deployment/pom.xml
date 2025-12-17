@@ -1,7 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,14 +11,27 @@
     </parent>
 
     <artifactId>quarkus-multitenancy-http-deployment</artifactId>
-
-    <name>Quarkus Multitenancy HTTP Deployment</name>
+    <packaging>jar</packaging>
 
     <dependencies>
+        <!-- Runtime -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>quarkus-multitenancy-http-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
+        <!-- Core deployment -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>quarkus-multitenancy-core-deployment</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Required Quarkus build-time dependencies -->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-core-deployment</artifactId>
+            <artifactId>quarkus-rest-deployment</artifactId>
         </dependency>
 
         <dependency>
@@ -28,17 +40,14 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.mathias82</groupId>
-            <artifactId>quarkus-multitenancy-http-runtime</artifactId>
-            <version>${project.version}</version>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jackson-deployment</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.github.mathias82</groupId>
-            <artifactId>quarkus-multitenancy-core-runtime</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>quarkus-multitenancy-http-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
-
 </project>

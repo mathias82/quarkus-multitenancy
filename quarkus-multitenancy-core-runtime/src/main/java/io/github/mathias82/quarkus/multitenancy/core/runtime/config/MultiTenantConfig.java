@@ -13,7 +13,7 @@ import java.util.List;
  * quarkus.multi-tenant.header-name=X-Tenant-Id
  * quarkus.multi-tenant.default-tenant=public
  */
-@ConfigMapping(prefix = "quarkus.multi-tenant")
+@ConfigMapping(prefix = "quarkus.multi-tenant.core")
 public interface MultiTenantConfig {
 
     @WithDefault("false")
