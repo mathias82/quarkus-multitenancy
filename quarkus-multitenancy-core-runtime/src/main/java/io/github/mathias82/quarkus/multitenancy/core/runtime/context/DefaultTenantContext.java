@@ -1,18 +1,8 @@
 package io.github.mathias82.quarkus.multitenancy.core.runtime.context;
 
-import jakarta.annotation.Priority;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.inject.Alternative;
-import jakarta.enterprise.inject.Typed;
-
 import java.util.Optional;
 
-/**
- * Default runtime TenantContext implementation.
- *
- * Scoped per execution context (HTTP request by default),
- * but may also be used by other adapters (gRPC, messaging, batch).
- */
 @RequestScoped
 public class DefaultTenantContext implements TenantContext {
 
@@ -20,10 +10,7 @@ public class DefaultTenantContext implements TenantContext {
 
     @Override
     public Optional<String> getTenantId() {
-        if (tenantId == null) {
-            return Optional.empty();
-        }
-        return Optional.of(tenantId);
+        return Optional.ofNullable(tenantId);
     }
 
     @Override
@@ -33,6 +20,6 @@ public class DefaultTenantContext implements TenantContext {
 
     @Override
     public void clear() {
-        this.tenantId = null;
+        tenantId = null;
     }
 }

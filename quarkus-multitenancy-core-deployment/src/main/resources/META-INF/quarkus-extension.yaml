@@ -1,0 +1,24 @@
+name: Quarkus Multitenancy Core
+artifact: io.github.mathias82:quarkus-multitenancy-core-runtime
+
+metadata:
+  keywords:
+    - multitenancy
+    - tenant
+    - core
+  categories:
+    - "Integration"
+  status: "stable"
+
+deployment:
+  artifact: io.github.mathias82:quarkus-multitenancy-core-deployment
+
+guide: "https://github.com/mathias82/quarkus-multitenancy"
+description: |
+  Provides the core multi-tenancy resolution mechanism for Quarkus.
+  Defines the TenantContext and strategy-based resolution abstraction.
+
+configuration:
+  - name: quarkus.multi-tenant.core
+    type: io.github.mathias82.quarkus.multitenancy.core.runtime.config.MultiTenantConfig
+    phase: RUN_TIME

@@ -4,10 +4,10 @@ import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 import java.util.List;
 
-@ConfigMapping(prefix = "quarkus.multitenancy.http")
+@ConfigMapping(prefix = "quarkus.multi-tenant.http")
 public interface HttpTenantConfig {
 
-    @WithDefault("false")
+    @WithDefault("true")
     boolean enabled();
 
     @WithDefault("header")
@@ -22,7 +22,7 @@ public interface HttpTenantConfig {
     @WithDefault("0")
     int pathSegmentIndex();
 
-    @WithDefault("tenant")
+    @WithDefault("cookie")
     String cookieName();
 
     @WithDefault("public")

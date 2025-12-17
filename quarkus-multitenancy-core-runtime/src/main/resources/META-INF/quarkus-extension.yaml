@@ -1,0 +1,5 @@
+name: Quarkus Multitenancy Core
+artifact: io.github.mathias82:quarkus-multitenancy-core-runtime
+
+deployment:
+  artifact: io.github.mathias82:quarkus-multitenancy-core-deployment

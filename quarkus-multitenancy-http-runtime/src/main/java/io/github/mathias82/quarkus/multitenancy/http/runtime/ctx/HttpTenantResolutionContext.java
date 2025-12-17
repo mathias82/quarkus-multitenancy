@@ -19,8 +19,8 @@ public class HttpTenantResolutionContext implements TenantResolutionContext {
             return Optional.of(type.cast(requestContext));
         }
 
-        if (type.getName().equals("jakarta.ws.rs.core.MultivaluedMap")) {
-            return Optional.of((T) requestContext.getHeaders());
+        if (type.isAssignableFrom(requestContext.getHeaders().getClass())) {
+            return Optional.of(type.cast(requestContext.getHeaders()));
         }
 
         return Optional.empty();

@@ -4,6 +4,7 @@ import io.github.mathias82.quarkus.multitenancy.core.runtime.api.TenantResolver;
 import io.github.mathias82.quarkus.multitenancy.core.runtime.config.MultiTenantConfig;
 import io.github.mathias82.quarkus.multitenancy.core.runtime.config.TenantStrategy;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;

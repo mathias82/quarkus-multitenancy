@@ -2,7 +2,6 @@ package io.github.mathias82.quarkus.multitenancy.core.runtime.core;
 
 import io.github.mathias82.quarkus.multitenancy.core.runtime.api.TenantResolutionContext;
 import io.github.mathias82.quarkus.multitenancy.core.runtime.api.TenantResolver;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +9,9 @@ public class CompositeTenantResolver {
 
     private final List<TenantResolver> resolvers;
 
+    public CompositeTenantResolver() {
+        this.resolvers = List.of();
+    }
     public CompositeTenantResolver(List<TenantResolver> resolvers) {
         this.resolvers = resolvers;
     }
