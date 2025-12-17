@@ -1,6 +1,5 @@
 name: "Quarkus Multitenancy HTTP"
 description: "Configurable multi-tenant resolution for HTTP requests"
-
 metadata:
   keywords:
     - multitenancy
@@ -9,5 +8,4 @@ metadata:
   categories:
     - web
     - security
-  status: experimental
-  deployment-artifact: "io.github.mathias82:quarkus-multitenancy-http-deployment::jar"
+status: experimental

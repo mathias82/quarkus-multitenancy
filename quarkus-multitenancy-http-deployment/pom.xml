@@ -13,33 +13,30 @@
 
     <artifactId>quarkus-multitenancy-http-deployment</artifactId>
 
-    <name>Quarkus Multitenancy Core Deployment</name>
+    <name>Quarkus Multitenancy HTTP Deployment</name>
 
     <dependencies>
 
-        <!-- HTTP runtime -->
         <dependency>
-            <groupId>io.github.mathias82</groupId>
-            <artifactId>quarkus-multitenancy-http-runtime</artifactId>
-            <version>${project.version}</version>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-core-deployment</artifactId>
         </dependency>
 
-        <!-- Core runtime -->
-        <dependency>
-            <groupId>io.github.mathias82</groupId>
-            <artifactId>quarkus-multitenancy-core-runtime</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <!-- Quarkus deployment APIs -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc-deployment</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-core-deployment</artifactId>
+            <groupId>io.github.mathias82</groupId>
+            <artifactId>quarkus-multitenancy-http-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.mathias82</groupId>
+            <artifactId>quarkus-multitenancy-core-runtime</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
     </dependencies>
