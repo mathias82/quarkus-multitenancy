@@ -13,7 +13,7 @@
 
     <artifactId>quarkus-multitenancy-http-deployment</artifactId>
 
-    <name>Quarkus Multitenancy HTTP Deployment</name>
+    <name>Quarkus Multitenancy Core Deployment</name>
 
     <dependencies>
 
