@@ -1,10 +1,10 @@
 # Quarkus Multi-Tenancy (Tenant Resolver)
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-runtime.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-runtime)
-[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-runtime/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-runtime)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-runtime/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-runtime/0.1.10)
+[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-runtime/0.1.10/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-runtime/0.1.10)
 [![Build](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml/badge.svg)](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-![Status](https://img.shields.io/badge/status-experimental-orange)
+![Status](https://img.shields.io/badge/status-stable-brightgreen)
 ![Java](https://img.shields.io/badge/Java-17%2B-blue)
 ![Quarkus](https://img.shields.io/badge/Quarkus-3.x-red)
 
@@ -207,6 +207,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
