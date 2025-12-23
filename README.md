@@ -38,16 +38,6 @@ Next step: *Quarkiverse compatibility* ✔️
 
 ---
 
-⚡ Highlights
-
-✅ Fully decoupled architecture, core & HTTP modules are independent
-✅ TenantContext API for per-request or per-operation tenant tracking
-✅ Multiple resolvers (header, JWT, cookie)
-✅ Composite resolver that chains multiple strategies
-✅ Strongly typed configuration via @ConfigMapping
-✅ Zero external dependencies
-✅ Works in JVM and Native mode
-
 ## ✨ Features
 
 ✔ **TenantContext API** for easy tenant access  
@@ -298,6 +288,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
