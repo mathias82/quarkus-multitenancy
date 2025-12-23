@@ -82,9 +82,6 @@ quarkus.multi-tenant.http.strategy=header,jwt,cookie
 # Header strategy
 quarkus.multi-tenant.http.header-name=X-Tenant-Id
 
-# JWT strategy
-quarkus.multi-tenant.http.jwt-claim-name=tenant
-
 # Cookie strategy
 quarkus.multi-tenant.http.cookie-name=tenant_cookie
 
@@ -301,6 +298,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
