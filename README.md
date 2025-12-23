@@ -17,6 +17,7 @@ a request-scoped TenantContext. Ideal for REST microservices that need multi-ten
 💡 Designed for REST microservices or backend modules
 it can run independently of HTTP, allowing tenant resolution in database, cache, or messaging layers.
 
+
 ## 📌 About This Project
 
 **Quarkus Multi-Tenancy** is an extension designed to standardize and simplify tenant resolution for Quarkus services, provides a decoupled multi-layer architecture.
@@ -153,6 +154,111 @@ HTTP Runtime	    quarkus-multitenancy-http-runtime	      Adds request filter, re
 HTTP Deployment	  quarkus-multitenancy-http-deployment	  Build-time registration for HTTP
 (Optional) Database Runtime	(upcoming)	                  Schema-based or datasource-level tenant resolution
 
+## 📦 Modules & Artifacts (v0.1.10)
+
+The **Quarkus Multi-Tenancy** extension is built as a **set of fully decoupled modules**,  
+allowing you to use only the layers you need.  
+Each module is independent and can run in **HTTP services**, **database integrations**, or **background jobs**.
+
+---
+
+### 🧩 1️⃣ Core Runtime  
+**Artifact:** `io.github.mathias82:quarkus-multitenancy-core-runtime`
+
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-core-runtime/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-core-runtime/0.1.10)
+[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-core-runtime/0.1.10/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-core-runtime/0.1.10)
+
+**Purpose:**  
+- Provides the **core runtime foundation** of the multitenancy system.  
+- Defines the `TenantContext`, `TenantResolver`, and `CompositeTenantResolver` APIs.  
+- Fully **framework-agnostic** — not tied to HTTP, REST, or Quarkus Web.  
+- Can be reused in **JPA**, **cache**, or **messaging** layers.
+
+> 💡 This is the **foundation layer** — everything else builds on top of it.
+
+---
+
+### ⚙️ 2️⃣ Core Deployment  
+**Artifact:** `io.github.mathias82:quarkus-multitenancy-core-deployment`
+
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-core-deployment/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-core-deployment/0.1.10)
+[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-core-deployment/0.1.10/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-core-deployment/0.1.10)
+
+**Purpose:**  
+- Integrates the **core runtime** with the Quarkus build lifecycle.  
+- Automatically registers beans like `TenantContext` and `CompositeTenantResolver`.  
+- Required only when building your own **Quarkus extensions**.
+
+> ⚙️ Mainly used by developers extending the framework — not typical application code.
+
+---
+
+### 🌐 3️⃣ HTTP Runtime  
+**Artifact:** `io.github.mathias82:quarkus-multitenancy-http-runtime`
+
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10)
+[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10)
+
+**Purpose:**  
+- Provides the **HTTP integration layer** for tenant resolution.  
+- Includes implementations for:
+  - `HeaderTenantResolver`
+  - `CookieTenantResolver`
+  - `JwtTenantResolver`
+  - `PathTenantResolver`
+- Uses `TenantFilter` to resolve and set the tenant in the `TenantContext`.
+
+> 🌍 Perfect for **REST APIs** or any HTTP-based microservice that needs tenant separation.
+
+---
+
+### 🧰 4️⃣ HTTP Deployment  
+**Artifact:** `io.github.mathias82:quarkus-multitenancy-http-deployment`
+
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-http-deployment/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-http-deployment/0.1.10)
+[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-http-deployment/0.1.10/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-http-deployment/0.1.10)
+
+**Purpose:**  
+- Registers the HTTP resolvers automatically during Quarkus build time.  
+- Used internally to wire up `TenantFilter` and runtime beans.  
+- Activated at build phase only — no runtime overhead.
+
+> 🧩 Required only for Quarkus extension developers or advanced build integrations.
+
+---
+
+### 🔮 (Upcoming) Database Runtime  
+**Artifact:** *(planned module)*
+
+**Purpose:**  
+- Introduces **schema-based multitenancy** for JDBC and Hibernate.  
+- Dynamically sets the database schema (e.g., `SET SCHEMA 'tenant_abc'`).  
+- Based entirely on the `core-runtime`, independent of HTTP or REST.
+
+> 🧱 Future module designed for **multi-tenant persistence** layers.
+
+---
+
+## 🧭 Module Overview
+
+| Module | Description | Depends On | Typical Usage |
+|---------|--------------|-------------|----------------|
+| **core-runtime** | Core TenantContext & Resolver APIs | — | All environments |
+| **core-deployment** | Quarkus build-time registration | core-runtime | Extension development |
+| **http-runtime** | Tenant resolution via HTTP (header, JWT, cookie, path) | core-runtime | REST microservices |
+| **http-deployment** | Registers HTTP resolvers at build time | http-runtime | Quarkus extensions |
+| **database-runtime** *(planned)* | Schema resolver for JDBC/Hibernate | core-runtime | Database integrations |
+
+---
+
+## 💡 TL;DR
+
+- 🧩 **Core Runtime** — the heart of the system, fully decoupled and framework-agnostic.  
+- 🌐 **HTTP Modules** — extend the core to handle web-based tenant resolution.  
+- ⚙️ **Deployment Modules** — handle Quarkus build-time bean registration.  
+- 🪶 Everything is **decoupled and modular** — use only what your service actually needs.
+
+
 ⚙️ Configuration Reference
 
 | Property | Type | Default | Description |
@@ -207,6 +313,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
