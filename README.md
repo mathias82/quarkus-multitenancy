@@ -122,13 +122,6 @@ curl --cookie "tenant_cookie=blue" http://localhost:8080/tenant
 ## Build
 mvn clean install
 
-🧪 Test It
-curl http://localhost:8080/tenant
-# → public
-
-curl -H "X-Tenant-Id: acme" http://localhost:8080/tenant
-# → acme
-
 🧩 Decoupled Architecture in Action
 
 This extension is built as independent layers:
@@ -288,6 +281,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
