@@ -51,11 +51,10 @@ Next step: *Quarkiverse compatibility* ✔️
 ## ✨ Features
 
 ✔ **TenantContext API** for easy tenant access  
-✔ **Pluggable resolver strategy** (header available, JWT/path/cookie upcoming)  
+✔ **Pluggable resolver strategy** (header available, JWT/path/cookie)  
 ✔ **Request-scoped CDI TenantContext**  
 ✔ **Strongly typed configuration** using `@ConfigMapping`  
 ✔ **Works in JVM and Native mode**  
-✔ **Zero external dependencies** besides Quarkus
 
 ---
 
@@ -302,6 +301,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
