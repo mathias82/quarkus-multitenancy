@@ -7,6 +7,8 @@
     </parent>
 
     <artifactId>quarkus-multitenancy-http-deployment</artifactId>
+    <name>Quarkus Multitenancy HTTP Deployment</name>
+    <description>Build-time processor for HTTP tenant resolution support.</description>
     <packaging>jar</packaging>
 
     <dependencies>

@@ -7,6 +7,8 @@
     </parent>
 
     <artifactId>quarkus-multitenancy-core-deployment</artifactId>
+    <name>Quarkus Multitenancy Core Deployment</name>
+    <description>Build-time integration for the core multitenancy runtime.</description>
     <packaging>jar</packaging>
 
     <dependencies>
