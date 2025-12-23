@@ -8,18 +8,24 @@
 ![Java](https://img.shields.io/badge/Java-17%2B-blue)
 ![Quarkus](https://img.shields.io/badge/Quarkus-3.x-red)
 
-A Quarkus extension that resolves the current tenant for each HTTP request 
-using pluggable strategies (header, JWT, cookie, path) and exposes it via 
-a request-scoped TenantContext. Ideal for REST microservices that need 
-multi-tenant logic without configuring multiple datasources or OIDC realms.
+A fully decoupled Quarkus extension that resolves the current tenant for each HTTP request 
+using pluggable strategies (header, JWT, cookie) and exposes it via 
+a request-scoped TenantContext. Ideal for REST microservices that need multi-tenant logic without managing multiple datasources or OIDC realms.
 
 ---
 
+💡 Designed for REST microservices or backend modules
+it can run independently of HTTP, allowing tenant resolution in database, cache, or messaging layers.
+
 ## 📌 About This Project
 
-**Quarkus Multi-Tenancy** is an extension designed to standardize and simplify tenant resolution for Quarkus services.
+**Quarkus Multi-Tenancy** is an extension designed to standardize and simplify tenant resolution for Quarkus services, provides a decoupled multi-layer architecture.
 
-It offers a production-friendly foundation for multi-tenant architectures:
+- A core runtime module that defines TenantResolver, TenantContext, and composition logic.
+- Independent HTTP, database, and deployment layers built on top of the core.
+
+This makes the extension modular, lightweight, and framework-agnostic,
+so you can plug tenant resolution into HTTP requests, JPA datasources, or background jobs seamlessly.
 
 - Consistent tenant identification per request
 - Pluggable resolvers (header now, JWT/cookie/path soon)
@@ -30,6 +36,16 @@ It offers a production-friendly foundation for multi-tenant architectures:
 Next step: *Quarkiverse compatibility* ✔️
 
 ---
+
+⚡ Highlights
+
+✅ Fully decoupled architecture, core & HTTP modules are independent
+✅ TenantContext API for per-request or per-operation tenant tracking
+✅ Multiple resolvers (header, JWT, cookie)
+✅ Composite resolver that chains multiple strategies
+✅ Strongly typed configuration via @ConfigMapping
+✅ Zero external dependencies
+✅ Works in JVM and Native mode
 
 ## ✨ Features
 
@@ -50,21 +66,31 @@ Next step: *Quarkiverse compatibility* ✔️
 <dependency>
   <groupId>io.github.mathias82</groupId>
   <artifactId>quarkus-multitenancy-runtime</artifactId>
-  <version>0.1.3</version>
+  <version>0.1.10</version>
 </dependency>
 
 2️⃣ Configure it
 
 Add properties in application.properties:
 
-quarkus.multi-tenant.enabled=true
-quarkus.multi-tenant.strategy=header
-quarkus.multi-tenant.header-name=X-Tenant-Id
-quarkus.multi-tenant.default-tenant=public
+# Enable HTTP multi-tenancy
+quarkus.multi-tenant.http.enabled=true
 
-# JWT claim for tenant
-quarkus.multi-tenant.strategy=jwt
-quarkus.multi-tenant.jwt-claim=tenantId
+# Choose one or more strategies
+quarkus.multi-tenant.http.strategy=header,jwt,cookie
+
+# Header strategy
+quarkus.multi-tenant.http.header-name=X-Tenant-Id
+
+# JWT strategy
+quarkus.multi-tenant.http.jwt-claim-name=tenant
+
+# Cookie strategy
+quarkus.multi-tenant.http.cookie-name=tenant_cookie
+
+# Default fallback tenant
+quarkus.multi-tenant.http.default-tenant=public
+
 
 3️⃣ Inject the TenantContext
 
@@ -91,6 +117,21 @@ public class TenantResource {
     }
 }`
 
+🧪 Test Examples
+
+HEADER
+curl -H "X-Tenant-Id: acme" http://localhost:8080/tenant
+# → acme
+
+JWT
+TOKEN=$(echo '{"tenant":"demo"}' | base64)
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/tenant
+# → demo
+
+Cookie
+curl --cookie "tenant_cookie=blue" http://localhost:8080/tenant
+# → blue
+
 ## Build
 mvn clean install
 
@@ -101,15 +142,25 @@ curl http://localhost:8080/tenant
 curl -H "X-Tenant-Id: acme" http://localhost:8080/tenant
 # → acme
 
+🧩 Decoupled Architecture in Action
+
+This extension is built as independent layers:
+
+Layer	            Module	                                Purpose
+Core Runtime	    quarkus-multitenancy-core-runtime	      Defines the API (TenantContext, TenantResolver)
+Core Deployment	  quarkus-multitenancy-core-deployment	  Build-time registration for Quarkus
+HTTP Runtime	    quarkus-multitenancy-http-runtime	      Adds request filter, resolvers for header/JWT/cookie/path
+HTTP Deployment	  quarkus-multitenancy-http-deployment	  Build-time registration for HTTP
+(Optional) Database Runtime	(upcoming)	                  Schema-based or datasource-level tenant resolution
+
 ⚙️ Configuration Reference
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `quarkus.multi-tenant.enabled` | boolean | `false` | Enables multi-tenancy |
-| `quarkus.multi-tenant.strategy` | string | `header` | Strategy used (`header`, later `jwt`, etc.) |
+| `quarkus.multi-tenant.strategy` | string | `header` | Strategy used (`header`, `jwt`, etc.) |
 | `quarkus.multi-tenant.header-name` | string | `X-Tenant-Id` | Header name for resolving tenant |
 | `quarkus.multi-tenant.default-tenant` | string | `public` | Tenant returned when none is provided |
-| `quarkus.multi-tenant.jwt-claim-name` | string | `tenant_id` | Claim name when using JWT strategy |
 
 🧱 Architecture Overview
 
@@ -156,6 +207,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
