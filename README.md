@@ -1,6 +1,6 @@
 # Quarkus Multi-Tenancy (Tenant Resolver)
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-runtime/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-runtime/0.1.10)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-runtime/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10)
 [![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-runtime/0.1.10/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-runtime/0.1.10)
 [![Build](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml/badge.svg)](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -207,6 +207,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
