@@ -162,7 +162,7 @@ Each module is independent and can run in **HTTP services**, **database integrat
 
 ---
 
-### 🧩 1️⃣ Core Runtime  
+### 🧩 Core Runtime  
 **Artifact:** `io.github.mathias82:quarkus-multitenancy-core-runtime`
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-core-runtime/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-core-runtime/0.1.10)
@@ -170,9 +170,9 @@ Each module is independent and can run in **HTTP services**, **database integrat
 
 **Purpose:**  
 - Provides the **core runtime foundation** of the multitenancy system.  
-- Defines the `TenantContext`, `TenantResolver`, and `CompositeTenantResolver` APIs.  
+- Defines `TenantContext`, `TenantResolver`, and `CompositeTenantResolver`.  
 - Fully **framework-agnostic** — not tied to HTTP, REST, or Quarkus Web.  
-- Can be reused in **JPA**, **cache**, or **messaging** layers.
+- Reusable in **JPA**, **cache**, or **messaging** layers.
 
 > 💡 This is the **foundation layer** — everything else builds on top of it.
 
@@ -313,6 +313,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
