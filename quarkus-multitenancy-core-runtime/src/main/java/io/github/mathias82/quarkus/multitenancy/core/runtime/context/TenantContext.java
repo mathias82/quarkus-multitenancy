@@ -1,7 +1,5 @@
 package io.github.mathias82.quarkus.multitenancy.core.runtime.context;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
 import java.util.Optional;
 
 /**
