@@ -69,7 +69,7 @@ Next step: *Quarkiverse compatibility* ✔️
   <version>0.1.10</version>
 </dependency>
 
-2️⃣ Configure it
+### 2️⃣ Configure it
 
 Add properties in application.properties:
 
@@ -92,7 +92,7 @@ quarkus.multi-tenant.http.cookie-name=tenant_cookie
 quarkus.multi-tenant.http.default-tenant=public
 
 
-3️⃣ Inject the TenantContext
+### 3️⃣ Inject the TenantContext
 
 import io.github.mathias82.quarkus.multitenant.runtime.context.TenantContext;
 
@@ -103,7 +103,7 @@ public void someMethod() {
     String tenant = tenantContext.getTenantId().orElse("unknown");
 }
 
-4️⃣ Example REST Endpoint
+### 4️⃣ Example REST Endpoint
 
 `@Path("/tenant")
 public class TenantResource {
@@ -117,7 +117,7 @@ public class TenantResource {
     }
 }`
 
-🧪 Test Examples
+### 🧪 Test Examples
 
 HEADER
 curl -H "X-Tenant-Id: acme" http://localhost:8080/tenant
@@ -207,6 +207,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
