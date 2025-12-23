@@ -1,7 +1,7 @@
 # Quarkus Multi-Tenancy (Tenant Resolver)
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10)
-[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.11.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.11)
+[![Javadoc](https://javadoc.io/badge2/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.11/javadoc.svg)](https://javadoc.io/doc/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.11)
 [![Build](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml/badge.svg)](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/status-stable-brightgreen)
@@ -66,7 +66,7 @@ Next step: *Quarkiverse compatibility* ✔️
 <dependency>
   <groupId>io.github.mathias82</groupId>
   <artifactId>quarkus-multitenancy-runtime</artifactId>
-  <version>0.1.10</version>
+  <version>0.1.11</version>
 </dependency>
 
 ### 2️⃣ Configure it
@@ -298,6 +298,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
