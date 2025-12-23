@@ -33,12 +33,6 @@
         <developerConnection>scm:git:https://github.com/mathias82/quarkus-multitenancy.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
-    <dependencies>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-        </dependency>
-    </dependencies>
 
     <developers>
         <developer>
@@ -63,7 +57,6 @@
 
     <dependencyManagement>
         <dependencies>
-
             <!-- Quarkus BOM -->
             <dependency>
                 <groupId>io.quarkus</groupId>
@@ -72,32 +65,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- Multitenancy modules -->
-            <dependency>
-                <groupId>io.github.mathias82</groupId>
-                <artifactId>quarkus-multitenancy-core-runtime</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.github.mathias82</groupId>
-                <artifactId>quarkus-multitenancy-core-deployment</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.github.mathias82</groupId>
-                <artifactId>quarkus-multitenancy-http-runtime</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.github.mathias82</groupId>
-                <artifactId>quarkus-multitenancy-http-deployment</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -145,6 +112,7 @@
                 <configuration>
                     <source>8</source>
                     <target>8</target>
+                    <basedir/>
                 </configuration>
             </plugin>
 
