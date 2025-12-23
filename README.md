@@ -165,8 +165,6 @@ Each module is independent and can run in **HTTP services**, **database integrat
 ### 🧩 Core Runtime  
 **Artifact:** `io.github.mathias82:quarkus-multitenancy-core-runtime`
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-core-runtime/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-core-runtime/0.1.10)
-
 **Purpose:**  
 - Provides the **core runtime foundation** of the multitenancy system.  
 - Defines the `TenantContext`, `TenantResolver`, and `CompositeTenantResolver` APIs.  
@@ -181,9 +179,6 @@ Each module is independent and can run in **HTTP services**, **database integrat
 ### ⚙️ 2️⃣ Core Deployment  
 **Artifact:** `io.github.mathias82:quarkus-multitenancy-core-deployment`
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-core-deployment/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-core-deployment/0.1.10)
-
-
 **Purpose:**  
 - Integrates the **core runtime** with the Quarkus build lifecycle.  
 - Automatically registers beans like `TenantContext` and `CompositeTenantResolver`.  
@@ -195,8 +190,6 @@ Each module is independent and can run in **HTTP services**, **database integrat
 
 ### 🌐 3️⃣ HTTP Runtime  
 **Artifact:** `io.github.mathias82:quarkus-multitenancy-http-runtime`
-
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-http-runtime/0.1.10)
 
 **Purpose:**  
 - Provides the **HTTP integration layer** for tenant resolution.  
@@ -213,8 +206,6 @@ Each module is independent and can run in **HTTP services**, **database integrat
 
 ### 🧰 4️⃣ HTTP Deployment  
 **Artifact:** `io.github.mathias82:quarkus-multitenancy-http-deployment`
-
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-http-deployment/0.1.10.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-http-deployment/0.1.10)
 
 **Purpose:**  
 - Registers the HTTP resolvers automatically during Quarkus build time.  
@@ -311,6 +302,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
