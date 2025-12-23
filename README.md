@@ -111,7 +111,6 @@ curl -H "X-Tenant-Id: acme" http://localhost:8080/tenant
 # → acme
 
 JWT
-TOKEN=$(echo '{"tenant":"demo"}' | base64)
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/tenant
 # → demo
 
@@ -281,6 +280,7 @@ Planned future steps:
 ⭐ Support the Project
 
 If you find this useful, give the repo a star, it motivates continued development ❤️
+
 
 
 
