@@ -19,10 +19,7 @@ public interface HttpTenantConfig {
     @WithDefault("tenant")
     String jwtClaimName();
 
-    @WithDefault("0")
-    int pathSegmentIndex();
-
-    @WithDefault("cookie")
+    @WithDefault("tenant_cookie")
     String cookieName();
 
     @WithDefault("public")

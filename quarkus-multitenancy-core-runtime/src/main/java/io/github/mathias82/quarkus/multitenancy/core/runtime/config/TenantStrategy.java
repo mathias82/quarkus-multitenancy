@@ -1,5 +1,6 @@
 package io.github.mathias82.quarkus.multitenancy.core.runtime.config;
 
+import jakarta.enterprise.util.Nonbinding;
 import jakarta.inject.Qualifier;
 
 import java.lang.annotation.Retention;
@@ -10,7 +11,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Qualifier
 @Retention(RUNTIME)
-@Target(TYPE)
+@Target({TYPE, FIELD, PARAMETER})
 public @interface TenantStrategy {
-    String value();
+    @Nonbinding String value() default "";
 }

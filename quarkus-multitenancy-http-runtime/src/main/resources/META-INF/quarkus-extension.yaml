@@ -1,4 +1,0 @@
-name: Quarkus Multitenancy HTTP
-description: HTTP-based multitenancy support
-artifact: io.github.mathias82:quarkus-multitenancy-http-runtime
-deployment-artifact: io.github.mathias82:quarkus-multitenancy-http-deployment

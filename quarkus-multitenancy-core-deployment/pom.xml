@@ -1,6 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>io.github.mathias82</groupId>
         <artifactId>quarkus-multitenancy</artifactId>
@@ -11,14 +10,11 @@
     <packaging>jar</packaging>
 
     <dependencies>
-        <!-- Runtime -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>quarkus-multitenancy-core-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <!-- Quarkus Build-Time API -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc-deployment</artifactId>

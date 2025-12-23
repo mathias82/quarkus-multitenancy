@@ -33,6 +33,12 @@
         <developerConnection>scm:git:https://github.com/mathias82/quarkus-multitenancy.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+    </dependencies>
 
     <developers>
         <developer>
@@ -132,6 +138,14 @@
                         <goals><goal>jar</goal></goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
             </plugin>
 
         </plugins>

@@ -7,7 +7,6 @@ import java.util.Optional;
 /**
  * Represents the per-request tenant context.
  */
-@ApplicationScoped
 public interface TenantContext {
 
     Optional<String> getTenantId();
