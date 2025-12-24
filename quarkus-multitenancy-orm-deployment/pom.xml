@@ -6,20 +6,22 @@
         <version>0.1.12</version>
     </parent>
 
-    <artifactId>quarkus-multitenancy-core-deployment</artifactId>
-    <name>Quarkus Multitenancy Core Deployment</name>
-    <description>Build-time integration for the core multitenancy runtime.</description>
+    <artifactId>quarkus-multitenancy-orm-deployment</artifactId>
+    <name>Quarkus Multi tenancy ORM Deployment</name>
+    <description>ORM layer for tenant resolution</description>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>quarkus-multitenancy-core-runtime</artifactId>
+            <groupId>io.github.mathias82</groupId>
+            <artifactId>quarkus-multitenancy-orm-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-arc-deployment</artifactId>
+            <artifactId>quarkus-hibernate-orm-deployment</artifactId>
         </dependency>
     </dependencies>
+
 </project>

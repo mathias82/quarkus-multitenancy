@@ -6,9 +6,9 @@
         <version>0.1.12</version>
     </parent>
 
-    <artifactId>quarkus-multitenancy-http-runtime</artifactId>
-    <name>Quarkus Multitenancy HTTP Runtime</name>
-    <description>HTTP layer for tenant resolution via headers, cookies, or JWT.</description>
+    <artifactId>quarkus-multitenancy-orm-runtime</artifactId>
+    <name>Quarkus Multi tenancy ORM Runtime</name>
+    <description>ORM layer for tenant resolution</description>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -23,16 +23,12 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-arc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jackson</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-jwt</artifactId>
+            <artifactId>quarkus-hibernate-orm</artifactId>
         </dependency>
-
     </dependencies>
+
 </project>

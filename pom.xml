@@ -6,7 +6,7 @@
 
     <groupId>io.github.mathias82</groupId>
     <artifactId>quarkus-multitenancy</artifactId>
-    <version>0.1.11</version>
+    <version>0.1.12</version>
     <packaging>pom</packaging>
 
     <name>Quarkus Multitenancy Extension</name>
@@ -15,7 +15,7 @@
 
         Provides a runtime abstraction for resolving tenant identifiers and making them
         available through a CDI-managed TenantContext. The abstraction can be integrated
-        by different transports and extensions (such as HTTP or security), while keeping
+        by different transports and extensions such as HTTP or ORM or Security, while keeping
         the core tenant resolution mechanism independent of any specific technology.
     </description>
     <url>https://github.com/mathias82/quarkus-multitenancy</url>
@@ -47,10 +47,13 @@
         <module>quarkus-multitenancy-core-deployment</module>
         <module>quarkus-multitenancy-http-runtime</module>
         <module>quarkus-multitenancy-http-deployment</module>
+        <module>quarkus-multitenancy-orm-runtime</module>
+        <module>quarkus-multitenancy-orm-deployment</module>
+        <module>quarkus-multitenancy-demo</module>
     </modules>
 
     <properties>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <quarkus.version>3.29.4</quarkus.version>
     </properties>

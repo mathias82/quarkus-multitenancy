@@ -1,0 +1,115 @@
+{
+  "info": {
+    "name": "Quarkus Multitenancy Demo",
+    "description": "Postman collection for testing multi-tenant Quarkus demo with PostgreSQL and HTTP strategy",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Current Tenant (tenant1)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Tenant", "value": "tenant1", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/users/tenant",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "users", "tenant"]
+        }
+      }
+    },
+    {
+      "name": "Get Current Tenant (tenant2)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Tenant", "value": "tenant2", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/users/tenant",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "users", "tenant"]
+        }
+      }
+    },
+    {
+      "name": "List Users (tenant1)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Tenant", "value": "tenant1", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/users",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "users"]
+        }
+      }
+    },
+    {
+      "name": "List Users (tenant2)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-Tenant", "value": "tenant2", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/users",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "users"]
+        }
+      }
+    },
+    {
+      "name": "Create User (tenant1 - Manthos)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "X-Tenant", "value": "tenant1", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Manthos\",\n  \"email\": \"manthos@tenant1.com\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/users",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "users"]
+        }
+      }
+    },
+    {
+      "name": "Create User (tenant2 - Izabela)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "X-Tenant", "value": "tenant2", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Izabela\",\n  \"email\": \"izabela@tenant2.com\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/users",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "users"]
+        }
+      }
+    }
+  ]
+}
