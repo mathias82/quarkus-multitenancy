@@ -65,6 +65,7 @@ Next step: *Quarkiverse compatibility* ✔️
 ```bash
 mvn clean install
 cd quarkus-multitenancy-demo
+mvn quarkus:dev
 
 In order to test it import the demo.postman_collection.json into Postman Curl
 
@@ -78,6 +79,6 @@ In order to test it import the demo.postman_collection.json into Postman Curl
      ↓
 [ORM Resolver] → selects datasource (tenant1, tenant2)
 
-
-mvn quarkus:dev
+👉 See demo/README.md
+ for full setup (Docker, Postman, tenants).
 
