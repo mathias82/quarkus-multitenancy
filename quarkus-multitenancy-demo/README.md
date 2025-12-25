@@ -39,6 +39,10 @@ curl -X POST -H "X-Tenant: tenant1" -H "Content-Type: application/json" \
   -d '{"name":"Manthos","email":"manthos@tenant1.com"}' \
   http://localhost:8080/api/users
 
+curl -X POST -H "X-Tenant: tenant2" -H "Content-Type: application/json" \
+  -d '{"name":"Izabela","email":"izabela@tenant2.com"}' \
+  http://localhost:8080/api/users
+
 🧰 Postman Collection
 
 import the json file postman/demo.postman_collection.json into postman
