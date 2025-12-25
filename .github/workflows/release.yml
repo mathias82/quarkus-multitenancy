@@ -1,7 +1,6 @@
 name: Maven Central Release
 
 on:
-  workflow_dispatch:
   push:
     tags:
       - "v*"
@@ -11,44 +10,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup JDK
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: 21
           server-id: ossrh
           server-username: OSSRH_USERNAME
           server-password: OSSRH_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Set Maven version from tag
+      - name: Set version from tag
         run: |
-          VERSION=${GITHUB_REF/refs\/tags\/v/}
+          VERSION=${GITHUB_REF#refs/tags/v}
           mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false
 
       - name: Deploy to Maven Central
         run: mvn clean deploy -Prelease -DskipTests
-
-      - name: Close and Release Staging Repository
-        run: |
-          mvn nexus-staging:release \
-            -DserverId=ossrh \
-            -DnexusUrl=https://s01.oss.sonatype.org \
-            -DautoReleaseAfterClose=true
-
-      - name: Push updated POM version increment (next snapshot)
-        run: |
-          VERSION=${GITHUB_REF/refs\/tags\/v/}
-          NEXT=$(echo $VERSION | awk -F. '{printf "%d.%d.%d-SNAPSHOT", $1, $2, $3+1}')
-          mvn versions:set -DnewVersion=$NEXT -DgenerateBackupPoms=false
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git commit -am "Prepare for next development iteration"
-          git push
