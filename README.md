@@ -60,6 +60,105 @@ Next step: *Quarkiverse compatibility* ✔️
 
 ---
 
+# 🧠 Quarkus Multi-Tenancy Core Runtime
+
+The **core foundation** of the Quarkus Multi-Tenancy extension.  
+It defines the base APIs used to resolve and isolate tenants across layers —  
+from HTTP requests to ORM and background jobs.
+
+---
+
+## 🚀 What It Does
+
+This module provides:
+- The **`TenantContext`** – a request-scoped CDI bean storing the active tenant.
+- The **`TenantResolver`** – an interface for resolving tenant IDs dynamically.
+- The **`CompositeTenantResolver`** – allows multiple resolvers (header, JWT, cookie) to cooperate.
+
+---
+
+## 🧩 Multi-Tenant Isolation Achieved
+
+Using this module (along with the HTTP and ORM runtimes),  
+each incoming request is **isolated per tenant**, both logically and physically:
+
+✅ Each request carries a tenant identifier (e.g., `X-Tenant: tenant1`).  
+✅ The active tenant is injected into `TenantContext`.  
+✅ The ORM runtime automatically routes persistence operations to the correct datasource.  
+✅ This ensures **complete data isolation** — each tenant’s data lives in its own database.
+
+For example:
+
+| Request | Header | Database Used |
+|----------|---------|---------------|
+| `GET /api/users` | `X-Tenant: tenant1` | `tenant1` PostgreSQL DB |
+| `GET /api/users` | `X-Tenant: tenant2` | `tenant2` PostgreSQL DB |
+
+This means:  
+→ Users from tenant1 will **never see or modify** data from tenant2.  
+→ The system scales horizontally with full **per-tenant isolation**.  
+
+---
+
+## ⚙️ Required Dependencies
+
+To enable full multi-tenant operation, your application should include:
+
+```xml
+<dependencies>
+    <!-- HTTP Runtime (for header/jwt/cookie resolution) -->
+    <dependency>
+        <groupId>io.github.mathias82</groupId>
+        <artifactId>quarkus-multitenancy-http-runtime</artifactId>
+        <version>0.1.12</version>
+    </dependency>
+
+    <!-- ORM Runtime (for Hibernate datasource switching) -->
+    <dependency>
+        <groupId>io.github.mathias82</groupId>
+        <artifactId>quarkus-multitenancy-orm-runtime</artifactId>
+        <version>0.1.12</version>
+    </dependency>
+</dependencies>
+
+These three modules together provide:
+- Tenant resolution from HTTP requests
+- Runtime context propagation
+- ORM-level datasource routing per tenant
+
+💡 Example Usage
+
+import io.github.mathias82.quarkus.multitenancy.core.runtime.context.TenantContext;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+
+@Path("/tenant")
+public class TenantResource {
+
+    @Inject
+    TenantContext tenantContext;
+
+    @GET
+    public String getTenant() {
+        return tenantContext.getTenantId().orElse("NO TENANT FOUND");
+    }
+}
+
+When you send:
+curl -H "X-Tenant: tenant1" http://localhost:8080/tenant
+
+Output: tenant1
+
+And Hibernate ORM automatically connects to the datasource configured for tenant1.
+
+| Layer            | Module                              | Responsibility                       |
+| ---------------- | ----------------------------------- | ------------------------------------ |
+| **HTTP Runtime** | `quarkus-multitenancy-http-runtime` | Resolves tenant per HTTP request     |
+| **ORM Runtime**  | `quarkus-multitenancy-orm-runtime`  | Connects ORM layer to tenant context |
+
+Together, they achieve full tenant-based isolation in Quarkus.
+
 ## 🚀 Quick Start
 
 ```bash
@@ -81,4 +180,5 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 👉 See demo/README.md
  for full setup (Docker, Postman, tenants).
+
 
