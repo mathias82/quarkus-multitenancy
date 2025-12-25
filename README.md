@@ -121,7 +121,7 @@ To enable full multi-tenant operation, your application should include:
     </dependency>
 </dependencies>
 
-These three modules together provide:
+These two modules together provide:
 - Tenant resolution from HTTP requests
 - Runtime context propagation
 - ORM-level datasource routing per tenant
@@ -180,6 +180,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 👉 See demo/README.md
  for full setup (Docker, Postman, tenants).
+
 
 
 
