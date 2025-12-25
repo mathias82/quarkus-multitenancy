@@ -63,7 +63,7 @@ Next step: *Quarkiverse compatibility* ✔️
 # 🧠 Quarkus Multi-Tenancy Core Runtime
 
 The **core foundation** of the Quarkus Multi-Tenancy extension.  
-It defines the base APIs used to resolve and isolate tenants across layers —  
+It defines the base APIs used to resolve and isolate tenants across layers 
 from HTTP requests to ORM and background jobs.
 
 ---
@@ -180,5 +180,6 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 👉 See demo/README.md
  for full setup (Docker, Postman, tenants).
+
 
 
