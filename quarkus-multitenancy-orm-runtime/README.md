@@ -1,29 +1,29 @@
-# 🌐 Quarkus Multi-Tenancy HTTP Runtime
+# 🧱 Quarkus Multi-Tenancy ORM Runtime
 
-Provides pluggable tenant resolvers for HTTP requests.
+Connects the **core** tenant abstraction with Quarkus Hibernate ORM multi-tenancy.
 
-## Available Strategies
+## How It Works
+Bridges the `TenantResolver` API into Quarkus' ORM tenant system.
 
-- `HeaderTenantResolver` — reads from `X-Tenant` header
-- `CookieTenantResolver` — extracts from cookies
-- `JwtTenantResolver` — extracts claim from JWT
-- `PathTenantResolver` — resolves from URL path
+## Example Implementation
 
-## Configuration
+```java
+@PersistenceUnitExtension
+@ApplicationScoped
+public class OrmTenantResolverAdapter implements io.quarkus.hibernate.orm.runtime.tenant.TenantResolver {
 
-```properties
-quarkus.multi-tenant.http.enabled=true
-quarkus.multi-tenant.http.strategy=header,jwt
-quarkus.multi-tenant.http.header-name=X-Tenant
-quarkus.multi-tenant.http.default-tenant=public
+    @Inject TenantResolver coreResolver;
+    @Inject TenantContext tenantContext;
 
+    @Override
+    public String getDefaultTenantId() {
+        return "tenant1";
+    }
 
-CDI Integration
-
-@Inject
-TenantContext tenantContext;
-
-@GET
-public String tenant() {
-    return tenantContext.getTenantId().orElse("public");
+    @Override
+    public String resolveTenantId() {
+        return coreResolver.resolve(new OrmTenantResolutionContext())
+                           .or(() -> tenantContext.getTenantId())
+                           .orElse(getDefaultTenantId());
+    }
 }
