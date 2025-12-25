@@ -65,4 +65,19 @@ Next step: *Quarkiverse compatibility* ✔️
 ```bash
 mvn clean install
 cd quarkus-multitenancy-demo
+
+In order to test it import the demo.postman_collection.json into Postman Curl
+
+🧭 Architecture Overview
+
+[HTTP Request]
+     ↓
+[HTTP TenantResolver] (header/JWT/cookie)
+     ↓
+[TenantContext] (request-scoped)
+     ↓
+[ORM Resolver] → selects datasource (tenant1, tenant2)
+
+
 mvn quarkus:dev
+
