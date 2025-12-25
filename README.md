@@ -178,7 +178,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
      ↓
 [ORM Resolver] → selects datasource (tenant1, tenant2)
 
-👉 See demo/README.md
+👉 See the quarkus-multitenancy-demo README.md
  for full setup (Docker, Postman, tenants).
 
 
