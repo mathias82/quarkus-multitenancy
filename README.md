@@ -7,7 +7,7 @@
 ![Quarkus](https://img.shields.io/badge/Quarkus-3.x-red)
 ![Status](https://img.shields.io/badge/status-stable-brightgreen)
 
-> A modular, decoupled multi-tenancy framework for Quarkus —  
+> A modular, decoupled multi-tenancy framework for Quarkus 
 > supporting HTTP, ORM, and future extensions.
 
 
@@ -180,6 +180,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 👉 See demo/README.md
  for full setup (Docker, Postman, tenants).
+
 
 
 
