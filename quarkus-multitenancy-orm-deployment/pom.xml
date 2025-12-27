@@ -3,7 +3,7 @@
     <parent>
         <groupId>io.github.mathias82</groupId>
         <artifactId>quarkus-multitenancy</artifactId>
-        <version>0.1.12</version>
+        <version>0.1.13</version>
     </parent>
 
     <artifactId>quarkus-multitenancy-orm-deployment</artifactId>
