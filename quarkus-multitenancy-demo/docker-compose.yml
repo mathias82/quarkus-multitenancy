@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: tenant1
     ports:
       - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
     volumes:
       - ./init-scripts/init-tenant1.sql:/docker-entrypoint-initdb.d/init-tenant1.sql
 
@@ -20,5 +22,7 @@ services:
       POSTGRES_DB: tenant2
     ports:
       - "5434:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
     volumes:
       - ./init-scripts/init-tenant2.sql:/docker-entrypoint-initdb.d/init-tenant2.sql

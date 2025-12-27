@@ -32,7 +32,6 @@ public class UserResource {
         return user;
     }
 
-
     @GET
     @Path("/tenant")
     public Optional<String> tenant() {
