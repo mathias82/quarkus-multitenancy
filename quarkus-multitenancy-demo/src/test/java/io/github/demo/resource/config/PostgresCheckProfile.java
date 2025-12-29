@@ -23,9 +23,6 @@ public class PostgresCheckProfile implements QuarkusTestProfile {
 
         return Map.of(
                 "quarkus.datasource.db-kind", "postgresql",
-                "quarkus.datasource.jdbc.url", "jdbc:postgresql://localhost:5435/testdb",
-                "quarkus.datasource.username", "test",
-                "quarkus.datasource.password", "test",
                 "quarkus.hibernate-orm.database.generation", "drop-and-create"
         );
     }
