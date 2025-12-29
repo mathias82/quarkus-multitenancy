@@ -6,7 +6,7 @@
 
     <groupId>io.github.mathias82</groupId>
     <artifactId>quarkus-multitenancy</artifactId>
-    <version>0.1.14</version>
+    <version>0.1.15</version>
     <packaging>pom</packaging>
 
     <name>Quarkus Multitenancy Extension</name>
