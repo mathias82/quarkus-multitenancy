@@ -110,14 +110,14 @@ To enable full multi-tenant operation, your application should include:
     <dependency>
         <groupId>io.github.mathias82</groupId>
         <artifactId>quarkus-multitenancy-http-runtime</artifactId>
-        <version>0.1.13</version>
+        <version>0.1.14</version>
     </dependency>
 
     <!-- ORM Runtime (for Hibernate datasource switching) -->
     <dependency>
         <groupId>io.github.mathias82</groupId>
         <artifactId>quarkus-multitenancy-orm-runtime</artifactId>
-        <version>0.1.13</version>
+        <version>0.1.14</version>
     </dependency>
 </dependencies>
 
@@ -180,6 +180,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 👉 See the quarkus-multitenancy-demo README.md
  for full setup (Docker, Postman, tenants).
+
 
 
 
