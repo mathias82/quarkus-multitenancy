@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>Quarkus Multitenant Plugin (Java) | Quarkus Multitenancy Extension</title>
+    <meta name="description" content="A Quarkus multitenant plugin/extension (Java) for tenant resolution via Header/JWT/Cookie, feeding Hibernate ORM multitenancy and consistent TenantContext. Maven Central + demo." />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://mathias82.github.io/quarkus-multitenancy/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Quarkus Multitenant Plugin (Java) | Quarkus Multitenancy Extension" />
+    <meta property="og:description" content="Tenant resolution via Header/JWT/Cookie, consistent TenantContext, optional Hibernate ORM multitenancy routing. Maven Central + demo." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mathias82.github.io/quarkus-multitenancy/" />
+
+    <!-- Minimal styling -->
+    <style>
+        :root { --max: 980px; }
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; color: #111; }
+        header, main, footer { max-width: var(--max); margin: 0 auto; padding: 24px; }
+        header { padding-top: 40px; }
+        h1 { font-size: 34px; margin: 0 0 10px; }
+        p { line-height: 1.55; }
+        .tag { display:inline-block; border:1px solid #ddd; padding:4px 10px; border-radius:999px; margin: 6px 6px 0 0; font-size: 13px; }
+        .box { border:1px solid #eee; border-radius: 12px; padding: 16px; background: #fafafa; }
+        code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+        pre { padding: 14px; border-radius: 10px; background: #0b0f19; color: #e7e7e7; overflow-x:auto; }
+        a { color: #0b57d0; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .grid { display:grid; grid-template-columns: 1fr; gap: 14px; }
+        @media (min-width: 900px){ .grid { grid-template-columns: 1fr 1fr; } }
+        .cta { display:flex; gap:12px; flex-wrap:wrap; margin-top: 14px; }
+        .btn { display:inline-block; padding:10px 14px; border-radius:10px; border:1px solid #ddd; background:#fff; }
+        .btn.primary { background:#111; color:#fff; border-color:#111; }
+        footer { padding-bottom: 50px; color:#666; }
+    </style>
+</head>
+
+<body>
+<header>
+    <h1>Quarkus Multitenant Plugin (Java): Quarkus Multitenancy Extension</h1>
+    <p>
+        A lightweight Quarkus extension that standardizes <strong>tenant resolution</strong> via <strong>Header / JWT / Cookie</strong>,
+        exposing a consistent <strong>TenantContext</strong> and optionally feeding <strong>Hibernate ORM multitenancy</strong> (datasource routing).
+    </p>
+
+    <div>
+        <span class="tag">quarkus multitenant</span>
+        <span class="tag">quarkus multitenancy</span>
+        <span class="tag">tenant resolver</span>
+        <span class="tag">hibernate orm multitenancy</span>
+        <span class="tag">java</span>
+        <span class="tag">maven central</span>
+    </div>
+
+    <div class="cta">
+        <a class="btn primary" href="https://github.com/mathias82/quarkus-multitenancy">GitHub Repo</a>
+        <a class="btn" href="https://central.sonatype.com/search?q=io.github.mathias82">Maven Central</a>
+        <a class="btn" href="https://medium.com/@mstauroy/building-a-generic-multitenancy-extension-for-quarkus-from-idea-to-maven-central-7c4045c404a3">Full Article (Medium)</a>
+        <a class="btn" href="https://dev.to/mathias82/">dev.to</a>
+    </div>
+</header>
+
+<main>
+    <section class="box">
+        <h2>Quickstart (2 minutes)</h2>
+        <p>Add the runtime modules:</p>
+        <pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;io.github.mathias82&lt;/groupId&gt;
+  &lt;artifactId&gt;quarkus-multitenancy-http-runtime&lt;/artifactId&gt;
+  &lt;version&gt;0.1.15&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+  &lt;groupId&gt;io.github.mathias82&lt;/groupId&gt;
+  &lt;artifactId&gt;quarkus-multitenancy-orm-runtime&lt;/artifactId&gt;
+  &lt;version&gt;0.1.15&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+
+        <p>Configure tenant resolution (Header example):</p>
+        <pre><code>quarkus.multi-tenant.http.enabled=true
+quarkus.multi-tenant.http.strategy=header
+quarkus.multi-tenant.http.header-name=X-Tenant</code></pre>
+
+        <p>Test:</p>
+        <pre><code>curl -H "X-Tenant: tenant1" http://localhost:8080/tenant</code></pre>
+    </section>
+
+    <section class="grid" style="margin-top:16px;">
+        <div class="box">
+            <h2>Quarkus multitenancy: OIDC multitenancy vs tenant resolution</h2>
+            <p>
+                When developers search for <strong>Quarkus multitenancy</strong>, they often mean <strong>OIDC multitenancy</strong>
+                (multiple OIDC tenants/providers). This project targets a different gap:
+                resolving the tenant id consistently (header/JWT/cookie) and exposing a TenantContext across the request lifecycle.
+            </p>
+        </div>
+
+        <div class="box">
+            <h2>Quarkus multitenant: complements Hibernate ORM multitenancy</h2>
+            <p>
+                When developers search for <strong>Quarkus multitenant</strong>, they often mean database/schema isolation via
+                <strong>Hibernate ORM multitenancy</strong>. This plugin doesn’t replace it; it provides the missing tenant-resolution contract
+                that feeds ORM routing reliably.
+            </p>
+        </div>
+    </section>
+
+    <section class="box" style="margin-top:16px;">
+        <h2>FAQ</h2>
+        <p><strong>Is this the same as OIDC multitenancy?</strong> No — OIDC multitenancy focuses on selecting auth/provider configuration. This focuses on tenant id resolution and propagation.</p>
+        <p><strong>Does this replace Hibernate ORM multitenancy?</strong> No — it complements it by providing consistent tenant resolution inputs for routing.</p>
+        <p><strong>Header vs JWT vs Cookie?</strong> Header is great for microservices; JWT claim fits auth-centric flows; cookie works for browser apps. The key is a single shared contract.</p>
+    </section>
+
+    <section class="box" style="margin-top:16px;">
+        <h2>Demo</h2>
+        <pre><code>git clone https://github.com/mathias82/quarkus-multitenancy
+cd quarkus-multitenancy/quarkus-multitenancy-demo
+docker-compose up -d
+mvn quarkus:dev</code></pre>
+        <p>See the demo README and Postman collection in the repo.</p>
+    </section>
+</main>
+
+<footer>
+    <p>
+        Maintained by <a href="https://github.com/mathias82">mathias82</a>. If this project helps you, a ⭐ on GitHub is appreciated.
+    </p>
+</footer>
+</body>
+</html>
