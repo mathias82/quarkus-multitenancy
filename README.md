@@ -1,6 +1,7 @@
 # 🧩 Quarkus Multi-Tenancy Extension
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.mathias82/quarkus-multitenancy-core-runtime.svg)](https://central.sonatype.com/artifact/io.github.mathias82/quarkus-multitenancy-core-runtime)
+[![Website](https://img.shields.io/badge/Website-GitHub%20Pages-black)](https://mathias82.github.io/quarkus-multitenancy/)
 [![Build](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml/badge.svg)](https://github.com/mathias82/quarkus-multitenancy/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 ![Java](https://img.shields.io/badge/Java-17%2B-blue)
@@ -180,6 +181,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 👉 See the quarkus-multitenancy-demo README.md
  for full setup (Docker, Postman, tenants).
+
 
 
 
