@@ -26,6 +26,7 @@ Why this exists
 💡 Designed for REST microservices or backend modules
 it can run independently of HTTP, allowing tenant resolution in database, cache, or messaging layers.
 
+⭐ If you find this useful, please give it a star, it helps visibility.
 
 ## 📌 About This Project
 
@@ -181,6 +182,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 👉 See the quarkus-multitenancy-demo README.md
  for full setup (Docker, Postman, tenants).
+
 
 
 
