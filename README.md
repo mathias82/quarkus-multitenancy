@@ -88,20 +88,18 @@ Add **both runtime modules** to enable end-to-end HTTP → ORM multi-tenancy:
 
 ```xml
 <dependencies>
-    <!-- HTTP runtime: tenant resolution via headers, JWT or cookies -->
     <dependency>
         <groupId>io.github.mathias82</groupId>
         <artifactId>quarkus-multitenancy-http-runtime</artifactId>
         <version>0.1.15</version>
     </dependency>
 
-    <!-- ORM runtime: tenant-aware datasource routing (Hibernate ORM) -->
     <dependency>
         <groupId>io.github.mathias82</groupId>
         <artifactId>quarkus-multitenancy-orm-runtime</artifactId>
         <version>0.1.15</version>
     </dependency>
-</dependencies> ``
+</dependencies>
 
 These two modules together provide:
 - Tenant resolution from HTTP requests
@@ -171,6 +169,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 
 ⭐ If this extension helps you build cleaner multi-tenant systems, consider starring the repository.
+
 
 
 
