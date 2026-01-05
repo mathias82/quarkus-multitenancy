@@ -8,25 +8,39 @@
 ![Quarkus](https://img.shields.io/badge/Quarkus-3.x-red)
 ![Status](https://img.shields.io/badge/status-stable-brightgreen)
 
-> A modular, decoupled multi-tenancy framework for Quarkus 
-> supporting HTTP, ORM, and future extensions.
+> Designed for SaaS, microservices and cloud-native Quarkus applications.
 
+
+A **fully decoupled, production-ready multi-tenancy extension for Quarkus**.
+
+It provides a generic tenant resolution API and reusable building blocks that work across:
+- HTTP (headers, cookies, JWT)
+- Hibernate ORM
+- Background jobs & async processing
+
+Tenant identification is abstracted away from infrastructure concerns and exposed through a **request-scoped `TenantContext`** that can be injected anywhere.
 
 Quarkus Multi-Tenancy provides a generic tenant resolution API and reusable building blocks that can be integrated with HTTP (headers, cookies, JWT), Hibernate ORM, and custom extensions.
-It abstracts tenant identification logic away from any specific technology
-and exposes a consistent TenantContext you can inject anywhere.
-
-Why this exists
-- No standard tenant resolution abstraction exists in Quarkus.
-- This library defines a generic runtime API usable across REST, ORM, OIDC, or messaging.
-- It can evolve into a Quarkiverse extension.
+It abstracts tenant identification logic away from any specific technology and exposes a consistent TenantContext you can inject anywhere.
 
 ---
+
+## Why this exists
+
+Quarkus does not provide a unified abstraction for tenant resolution across layers.
+
+This extension:
+- avoids duplicating tenant-resolution logic per technology
+- keeps tenant handling explicit and testable
+- enables clean multi-tenant SaaS architectures
+- works without framework lock-in
 
 💡 Designed for REST microservices or backend modules
 it can run independently of HTTP, allowing tenant resolution in database, cache, or messaging layers.
 
 ⭐ If you find this useful, please give it a star, it helps visibility.
+
+---
 
 ## 📌 About This Project
 
@@ -123,6 +137,8 @@ To enable full multi-tenant operation, your application should include:
     </dependency>
 </dependencies>
 
+---
+
 These two modules together provide:
 - Tenant resolution from HTTP requests
 - Runtime context propagation
@@ -161,6 +177,8 @@ And Hibernate ORM automatically connects to the datasource configured for tenant
 
 Together, they achieve full tenant-based isolation in Quarkus.
 
+---
+
 ## 🚀 Quick Start
 
 ```bash
@@ -170,7 +188,9 @@ mvn quarkus:dev
 
 In order to test it import the demo.postman_collection.json into Postman Curl
 
-🧭 Architecture Overview
+---
+
+## 🧭 Architecture Overview
 
 [HTTP Request]
      ↓
@@ -184,6 +204,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
  for full setup (Docker, Postman, tenants).
 
 
+⭐ If this extension helps you build cleaner multi-tenant systems, consider starring the repository.
 
 
 
