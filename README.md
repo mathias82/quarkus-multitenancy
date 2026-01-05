@@ -122,7 +122,7 @@ To enable full multi-tenant support in your Quarkus application, include the fol
 
 > Add both runtime modules to enable end-to-end HTTP → ORM multi-tenancy.
 
-````xml<dependencies>
+```xml<dependencies>
     <!-- HTTP runtime: tenant resolution via headers, JWT or cookies -->
     <dependency>
         <groupId>io.github.mathias82</groupId>
@@ -207,6 +207,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 
 ⭐ If this extension helps you build cleaner multi-tenant systems, consider starring the repository.
+
 
 
 
