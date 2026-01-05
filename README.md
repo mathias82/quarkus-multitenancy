@@ -118,33 +118,33 @@ This means:
 
 ## ⚙️ Required Dependencies
 
-To enable full multi-tenant operation, your application should include:
+To enable full multi-tenant support in your Quarkus application, include the following runtime modules:
 
-```xml
 <dependencies>
-    <!-- HTTP Runtime (for header/jwt/cookie resolution) -->
+    <!-- HTTP runtime: tenant resolution via headers, JWT or cookies -->
     <dependency>
         <groupId>io.github.mathias82</groupId>
         <artifactId>quarkus-multitenancy-http-runtime</artifactId>
         <version>0.1.15</version>
     </dependency>
 
-    <!-- ORM Runtime (for Hibernate datasource switching) -->
+    <!-- ORM runtime: tenant-aware datasource routing (Hibernate ORM) -->
     <dependency>
         <groupId>io.github.mathias82</groupId>
         <artifactId>quarkus-multitenancy-orm-runtime</artifactId>
         <version>0.1.15</version>
     </dependency>
-</dependencies> 
+</dependencies>
 
----
 
 These two modules together provide:
 - Tenant resolution from HTTP requests
 - Runtime context propagation
 - ORM-level datasource routing per tenant
 
-💡 Example Usage
+---
+
+## 💡 Example Usage
 
 import io.github.mathias82.quarkus.multitenancy.core.runtime.context.TenantContext;
 import jakarta.inject.Inject;
@@ -205,6 +205,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 
 ⭐ If this extension helps you build cleaner multi-tenant systems, consider starring the repository.
+
 
 
 
