@@ -136,7 +136,6 @@ To enable full multi-tenant operation, your application should include:
         <version>0.1.15</version>
     </dependency>
 </dependencies> 
-``
 
 ---
 
@@ -206,6 +205,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 
 ⭐ If this extension helps you build cleaner multi-tenant systems, consider starring the repository.
+
 
 
 
