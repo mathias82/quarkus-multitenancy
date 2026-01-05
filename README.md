@@ -179,6 +179,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 ## 🧭 Architecture Overview
 
+```
 [HTTP Request]
      ↓
 [HTTP TenantResolver] (header/JWT/cookie)
@@ -186,6 +187,8 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 [TenantContext] (request-scoped)
      ↓
 [ORM Resolver] → selects datasource (tenant1, tenant2)
+```
 
 👉 See the quarkus-multitenancy-demo README.md
  for full setup (Docker, Postman, tenants).
+
