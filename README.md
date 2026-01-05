@@ -110,8 +110,10 @@ These two modules together provide:
 
 ---
 
+```md
 ## 💡 Example Usage
 
+```java
 import io.github.mathias82.quarkus.multitenancy.core.runtime.context.TenantContext;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -171,6 +173,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 
 ⭐ If this extension helps you build cleaner multi-tenant systems, consider starring the repository.
+
 
 
 
