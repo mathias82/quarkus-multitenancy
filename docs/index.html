@@ -111,8 +111,8 @@ quarkus.multi-tenant.http.header-name=X-Tenant</code></pre>
 
     <section class="box" style="margin-top:16px;">
         <h2>FAQ</h2>
-        <p><strong>Is this the same as OIDC multitenancy?</strong> No — OIDC multitenancy focuses on selecting auth/provider configuration. This focuses on tenant id resolution and propagation.</p>
-        <p><strong>Does this replace Hibernate ORM multitenancy?</strong> No — it complements it by providing consistent tenant resolution inputs for routing.</p>
+        <p><strong>Is this the same as OIDC multitenancy?</strong> No, OIDC multitenancy focuses on selecting auth/provider configuration. This focuses on tenant id resolution and propagation.</p>
+        <p><strong>Does this replace Hibernate ORM multitenancy?</strong> No, it complements it by providing consistent tenant resolution inputs for routing.</p>
         <p><strong>Header vs JWT vs Cookie?</strong> Header is great for microservices; JWT claim fits auth-centric flows; cookie works for browser apps. The key is a single shared contract.</p>
     </section>
 
