@@ -171,6 +171,7 @@ Together, they achieve full tenant-based isolation in Quarkus.
 mvn clean install
 cd quarkus-multitenancy-demo
 mvn quarkus:dev
+```
 
 In order to test it import the demo.postman_collection.json into Postman Curl
 
@@ -188,14 +189,3 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 👉 See the quarkus-multitenancy-demo README.md
  for full setup (Docker, Postman, tenants).
-
-
-
-
-
-
-
-
-
-
-
