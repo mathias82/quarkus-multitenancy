@@ -101,7 +101,7 @@ Add **both runtime modules** to enable end-to-end HTTP → ORM multi-tenancy:
         <artifactId>quarkus-multitenancy-orm-runtime</artifactId>
         <version>0.1.15</version>
     </dependency>
-</dependencies>
+</dependencies> ```
 
 These two modules together provide:
 - Tenant resolution from HTTP requests
@@ -171,6 +171,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 
 ⭐ If this extension helps you build cleaner multi-tenant systems, consider starring the repository.
+
 
 
 
