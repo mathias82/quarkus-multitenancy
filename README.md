@@ -120,7 +120,7 @@ This means:
 
 To enable full multi-tenant operation, your application should include:
 
-``xml
+```xml
 <dependencies>
     <!-- HTTP Runtime (for header/jwt/cookie resolution) -->
     <dependency>
@@ -205,6 +205,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 
 ⭐ If this extension helps you build cleaner multi-tenant systems, consider starring the repository.
+
 
 
 
