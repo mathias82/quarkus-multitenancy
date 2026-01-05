@@ -108,12 +108,16 @@ These two modules together provide:
 - Runtime context propagation
 - ORM-level datasource routing per tenant
 
+👉 **Μόνο αυτό το fix** θα καθαρίσει το 80% της εικόνας.
+
 ---
+
+### 🔧 ΔΙΟΡΘΩΣΗ #2 — Example Usage block
+
+Και εδώ **ΠΡΕΠΕΙ** να είναι καθαρό Java block:
 
 ```md
 ## 💡 Example Usage
-
-```java
 import io.github.mathias82.quarkus.multitenancy.core.runtime.context.TenantContext;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -173,6 +177,7 @@ In order to test it import the demo.postman_collection.json into Postman Curl
 
 
 ⭐ If this extension helps you build cleaner multi-tenant systems, consider starring the repository.
+
 
 
 
