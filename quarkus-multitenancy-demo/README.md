@@ -7,6 +7,13 @@ A complete demo showing:
 
 ---
 
+## This demo exists to validate that:
+- tenant resolution can be decoupled from HTTP
+- context can be propagated consistently
+- ORM routing can rely on TenantContext without magic
+
+---
+
 ## 🐳 Setup with Docker
 
 Run the docker-compose.yml
