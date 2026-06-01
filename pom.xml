@@ -1,15 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.mathias82</groupId>
-    <artifactId>quarkus-multitenancy</artifactId>
-    <version>0.1.15</version>
+    <parent>
+        <groupId>io.quarkiverse</groupId>
+        <artifactId>quarkiverse-parent</artifactId>
+        <version>21</version>
+    </parent>
+
+    <groupId>io.quarkiverse.multitenancy</groupId>
+    <artifactId>quarkus-multitenancy-parent</artifactId>
+    <version>999-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Quarkus Multitenancy Extension</name>
+    <name>Quarkus - Multitenancy - Parent</name>
     <description>
         Generic and configurable multi-tenant resolution support for Quarkus.
 
@@ -18,19 +25,12 @@
         by different transports and extensions such as HTTP or ORM or Security, while keeping
         the core tenant resolution mechanism independent of any specific technology.
     </description>
-    <url>https://github.com/mathias82/quarkus-multitenancy</url>
-
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-        </license>
-    </licenses>
+    <url>https://github.com/quarkiverse/quarkus-multitenancy</url>
 
     <scm>
-        <url>https://github.com/mathias82/quarkus-multitenancy</url>
-        <connection>scm:git:https://github.com/mathias82/quarkus-multitenancy.git</connection>
-        <developerConnection>scm:git:https://github.com/mathias82/quarkus-multitenancy.git</developerConnection>
+        <connection>scm:git:git@github.com:quarkiverse/quarkus-multitenancy.git</connection>
+        <developerConnection>scm:git:git@github.com:quarkiverse/quarkus-multitenancy.git</developerConnection>
+        <url>https://github.com/quarkiverse/quarkus-multitenancy</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -39,6 +39,11 @@
             <id>mathias82</id>
             <name>Matthaios Stavrou</name>
             <url>https://github.com/mathias82</url>
+        </developer>
+        <developer>
+            <id>lu1tr0n</id>
+            <name>Luis Navarro</name>
+            <url>https://github.com/lu1tr0n</url>
         </developer>
     </developers>
 
@@ -54,13 +59,11 @@
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <quarkus.version>3.29.4</quarkus.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Quarkus BOM -->
             <dependency>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-bom</artifactId>
@@ -88,89 +91,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>
-                        -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-                    </argLine>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.9.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <autoPublish>true</autoPublish>
-                    <waitUntil>published</waitUntil>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals><goal>jar</goal></goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals><goal>jar</goal></goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <configuration>
-                            <executable>C:\Program Files\Git\usr\bin\gpg.exe</executable>
-                            <keyname>32FD74C82E76DD0E</keyname>
-                            <gpgArguments>
-                                <arg>--batch</arg>
-                                <arg>--yes</arg>
-                                <arg>--pinentry-mode</arg>
-                                <arg>loopback</arg>
-                            </gpgArguments>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals><goal>sign</goal></goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>

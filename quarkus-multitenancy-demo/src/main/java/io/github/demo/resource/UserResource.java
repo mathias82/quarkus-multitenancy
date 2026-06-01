@@ -1,13 +1,15 @@
 package io.github.demo.resource;
 
-import io.github.demo.entity.User;
-import io.github.mathias82.quarkus.multitenancy.core.runtime.context.TenantContext;
+import java.util.List;
+import java.util.Optional;
+
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import java.util.List;
-import java.util.Optional;
+
+import io.github.demo.entity.User;
+import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)

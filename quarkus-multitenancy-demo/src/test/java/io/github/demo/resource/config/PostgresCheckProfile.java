@@ -1,9 +1,9 @@
 package io.github.demo.resource.config;
 
+import java.util.Map;
+
 import io.github.demo.resource.utils.DatabaseTestUtils;
 import io.quarkus.test.junit.QuarkusTestProfile;
-
-import java.util.Map;
 
 public class PostgresCheckProfile implements QuarkusTestProfile {
 
@@ -17,14 +17,12 @@ public class PostgresCheckProfile implements QuarkusTestProfile {
             System.err.println("PostgreSQL not available. Disabling ORM and Datasource.");
             return Map.of(
                     "quarkus.hibernate-orm.enabled", "false",
-                    "quarkus.datasource.enabled", "false"
-            );
+                    "quarkus.datasource.enabled", "false");
         }
 
         return Map.of(
                 "quarkus.datasource.db-kind", "postgresql",
-                "quarkus.hibernate-orm.database.generation", "drop-and-create"
-        );
+                "quarkus.hibernate-orm.database.generation", "drop-and-create");
     }
 
     @Override

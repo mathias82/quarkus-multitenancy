@@ -6,31 +6,29 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.mathias82</groupId>
-        <artifactId>quarkus-multitenancy</artifactId>
-        <version>0.1.15</version>
+        <groupId>io.quarkiverse.multitenancy</groupId>
+        <artifactId>quarkus-multitenancy-parent</artifactId>
+        <version>999-SNAPSHOT</version>
     </parent>
 
-    <name>Quarkus Multitenancy Demo</name>
+    <name>Quarkus Multitenancy - Demo</name>
     <artifactId>quarkus-multitenancy-demo</artifactId>
     <packaging>jar</packaging>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <central.publish.skip>true</central.publish.skip>
     </properties>
-
 
     <dependencies>
         <dependency>
-            <groupId>io.github.mathias82</groupId>
-            <artifactId>quarkus-multitenancy-http-runtime</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>quarkus-multitenancy-http</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>io.github.mathias82</groupId>
-            <artifactId>quarkus-multitenancy-orm-runtime</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>quarkus-multitenancy-orm</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -52,43 +50,17 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.sonatype.central</groupId>
-                    <artifactId>central-publishing-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>injected-central-publishing</id>
-                            <phase>none</phase>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
-                <version>3.29.4</version>
+                <version>${quarkus.version}</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>build</goal>
                             <goal>generate-code</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.2.7</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>

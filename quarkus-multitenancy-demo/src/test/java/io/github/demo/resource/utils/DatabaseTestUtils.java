@@ -1,7 +1,8 @@
 package io.github.demo.resource.utils;
 
-import org.junit.jupiter.api.Assumptions;
 import java.net.Socket;
+
+import org.junit.jupiter.api.Assumptions;
 
 public class DatabaseTestUtils {
 
@@ -18,4 +19,3 @@ public class DatabaseTestUtils {
                 "Skipping test — PostgreSQL not running on " + host + ":" + port);
     }
 }
-

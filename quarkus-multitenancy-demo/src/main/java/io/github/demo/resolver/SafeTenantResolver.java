@@ -1,13 +1,14 @@
 package io.github.demo.resolver;
 
-import io.github.demo.exception.TenantNotFoundException;
-import io.github.mathias82.quarkus.multitenancy.core.runtime.api.TenantResolutionContext;
-import io.github.mathias82.quarkus.multitenancy.core.runtime.api.TenantResolver;
+import java.util.Optional;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
 
-import java.util.Optional;
+import io.github.demo.exception.TenantNotFoundException;
+import io.quarkiverse.multitenancy.core.runtime.api.TenantResolutionContext;
+import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 
 @ApplicationScoped
 public class SafeTenantResolver implements TenantResolver {

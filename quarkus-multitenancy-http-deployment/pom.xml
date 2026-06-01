@@ -1,25 +1,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>io.github.mathias82</groupId>
-        <artifactId>quarkus-multitenancy</artifactId>
-        <version>0.1.15</version>
+        <groupId>io.quarkiverse.multitenancy</groupId>
+        <artifactId>quarkus-multitenancy-parent</artifactId>
+        <version>999-SNAPSHOT</version>
     </parent>
 
     <artifactId>quarkus-multitenancy-http-deployment</artifactId>
-    <name>Quarkus Multitenancy HTTP Deployment</name>
+    <name>Quarkus Multitenancy - HTTP - Deployment</name>
     <description>Build-time processor for HTTP tenant resolution support.</description>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>quarkus-multitenancy-http-runtime</artifactId>
+            <artifactId>quarkus-multitenancy-http</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>quarkus-multitenancy-core-runtime</artifactId>
+            <artifactId>quarkus-multitenancy-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
