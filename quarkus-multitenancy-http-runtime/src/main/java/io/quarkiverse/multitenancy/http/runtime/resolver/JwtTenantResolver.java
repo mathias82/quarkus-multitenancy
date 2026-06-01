@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
 
 import org.jboss.logging.Logger;
@@ -14,13 +15,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolutionContext;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
+import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
+import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantStrategy;
 
 @ApplicationScoped
 public class JwtTenantResolver implements TenantResolver {
 
     private static final Logger logger = Logger.getLogger(JwtTenantResolver.class);
-    private static final String CLAIM_NAME = "tenant";
     private static final ObjectMapper mapper = new ObjectMapper();
+
+    @Inject
+    HttpTenantConfig config;
+
+    @Override
+    public String name() {
+        return HttpTenantStrategy.jwt.name();
+    }
 
     @Override
     public Optional<String> resolve(TenantResolutionContext context) {
@@ -36,6 +46,8 @@ public class JwtTenantResolver implements TenantResolver {
             return Optional.empty();
         }
 
+        String claimName = config.jwtClaimName();
+
         try {
             String token = authHeader.substring("Bearer ".length());
             String[] parts = token.split("\\.");
@@ -47,13 +59,13 @@ public class JwtTenantResolver implements TenantResolver {
             String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
             JsonNode payload = mapper.readTree(payloadJson);
 
-            if (!payload.has(CLAIM_NAME)) {
-                logger.debugf("JWT missing claim '%s'", CLAIM_NAME);
+            if (!payload.has(claimName)) {
+                logger.debugf("JWT missing claim '%s'", claimName);
                 return Optional.empty();
             }
 
-            String tenant = payload.get(CLAIM_NAME).asText();
-            logger.infof("Tenant claim decoded = '%s'", tenant);
+            String tenant = payload.get(claimName).asText();
+            logger.infof("Tenant claim '%s' decoded = '%s'", claimName, tenant);
             return Optional.of(tenant);
 
         } catch (Exception e) {
