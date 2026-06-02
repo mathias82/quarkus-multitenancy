@@ -1,0 +1,276 @@
+= Quarkus Multitenancy
+
+include::./includes/attributes.adoc[]
+
+Quarkus Multitenancy is a Quarkiverse extension that provides a reusable tenant resolution and context propagation foundation for Quarkus applications.
+
+It standardizes how a tenant identifier is resolved from incoming requests and exposes the resolved tenant through a consistent `TenantContext`.
+
+The extension is designed around a small set of abstractions:
+
+* `TenantResolver` for resolving tenant identifiers from different sources.
+* `TenantContext` for exposing the resolved tenant during request processing.
+* HTTP tenant resolution strategies such as header, cookie, JWT claim, and path-based resolution.
+* ORM integration for tenant-aware persistence use cases.
+
+== Status
+
+This extension is currently in preview while the API stabilizes.
+
+== Why this extension exists
+
+Quarkus already provides powerful building blocks for multitenancy, such as OIDC multitenancy and Hibernate ORM multitenancy.
+
+This extension focuses on a different layer: resolving the tenant identifier consistently and making it available to the rest of the application through a shared context.
+
+In other words, Quarkus Multitenancy does not replace OIDC multitenancy or Hibernate ORM multitenancy. It complements them by providing a reusable tenant resolution contract.
+
+== Quarkus multitenancy vs OIDC multitenancy
+
+When developers search for Quarkus multitenancy, they often mean OIDC multitenancy, where different OIDC tenants or providers are selected depending on the request.
+
+Quarkus Multitenancy targets a different concern.
+
+It focuses on resolving the tenant identifier from request data such as headers, cookies, JWT claims, or path segments, and exposing that value through `TenantContext`.
+
+OIDC multitenancy focuses on authentication provider selection.
+
+Quarkus Multitenancy focuses on tenant id resolution and propagation.
+
+The two concepts can be used together, but they solve different problems.
+
+== Quarkus multitenancy and Hibernate ORM
+
+Hibernate ORM multitenancy focuses on database, schema, or datasource isolation.
+
+Quarkus Multitenancy provides the tenant resolution layer that can feed tenant-aware persistence routing.
+
+For example, a request can resolve the tenant from the `X-Tenant` header and expose it through `TenantContext`. ORM integration can then use that resolved tenant to support tenant-aware persistence use cases.
+
+== Installation
+
+For HTTP tenant resolution:
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.quarkiverse.multitenancy</groupId>
+    <artifactId>quarkus-multitenancy-http</artifactId>
+    <version>${quarkus-multitenancy.version}</version>
+</dependency>
+----
+
+For ORM integration:
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.quarkiverse.multitenancy</groupId>
+    <artifactId>quarkus-multitenancy-orm</artifactId>
+    <version>${quarkus-multitenancy.version}</version>
+</dependency>
+----
+
+== Quickstart
+
+Enable HTTP tenant resolution and resolve the tenant from the `X-Tenant` header:
+
+[source,properties]
+----
+quarkus.multi-tenant.http.enabled=true
+quarkus.multi-tenant.http.strategy=header
+quarkus.multi-tenant.http.header-name=X-Tenant
+quarkus.multi-tenant.http.default-tenant=public
+----
+
+Example request:
+
+[source,bash]
+----
+curl -H "X-Tenant: tenant1" http://localhost:8080/api/users/tenant
+----
+
+The current tenant will be resolved as `tenant1`.
+
+== Basic usage
+
+By default, the HTTP module can resolve the tenant from configured HTTP strategies such as headers, JWT claims, or cookies.
+
+Example using the default strategy chain (header first):
+
+[source,properties]
+----
+quarkus.multi-tenant.http.enabled=true
+quarkus.multi-tenant.http.header-name=X-Tenant
+quarkus.multi-tenant.http.default-tenant=public
+----
+
+A request with:
+
+[source,text]
+----
+X-Tenant: acme
+----
+
+will resolve the current tenant as `acme`.
+
+== Resolution strategies
+
+=== Header
+
+[source,properties]
+----
+quarkus.multi-tenant.http.strategy=header
+quarkus.multi-tenant.http.header-name=X-Tenant
+----
+
+=== Cookie
+
+[source,properties]
+----
+quarkus.multi-tenant.http.strategy=cookie
+quarkus.multi-tenant.http.cookie-name=tenant_cookie
+----
+
+=== Path
+
+Path-based tenant resolution is useful for SaaS-style URLs where the tenant is part of the request path.
+
+For example:
+
+[source,text]
+----
+/t/acme/products
+----
+
+can resolve the tenant as `acme`.
+
+Path-based resolution is opt-in. Enable it by adding `path` to the strategy list:
+
+[source,properties]
+----
+quarkus.multi-tenant.http.strategy=path,header,cookie
+quarkus.multi-tenant.http.path-pattern=^/t/([^/]+)(?:/|$)
+quarkus.multi-tenant.http.path-group=1
+----
+
+The `path-pattern` property defines the regular expression used to match the request path.
+
+The `path-group` property defines which capturing group contains the tenant identifier.
+
+With the default pattern:
+
+[source,text]
+----
+^/t/([^/]+)(?:/|$)
+----
+
+the first capturing group extracts the tenant id from paths such as:
+
+[source,text]
+----
+/t/acme
+/t/acme/products
+/t/customer-123/orders
+----
+
+This strategy does not rewrite the URL or perform request routing. It only extracts the tenant identifier and stores it in `TenantContext`.
+
+=== JWT claim
+
+[source,properties]
+----
+quarkus.multi-tenant.http.strategy=jwt
+quarkus.multi-tenant.http.jwt-claim-name=tenant
+----
+
+IMPORTANT: JWT signature verification behavior is still under discussion. Do not rely on JWT tenant resolution for security-sensitive use cases until the JWT verification strategy is finalized.
+
+== Configuration
+
+The HTTP module currently exposes configuration under:
+
+[source,text]
+----
+quarkus.multi-tenant.http.*
+----
+
+Main options include:
+
+[cols="1,1,3", options="header"]
+|===
+| Property | Default | Description
+
+| `quarkus.multi-tenant.http.enabled`
+| `true`
+| Enables or disables HTTP tenant resolution.
+
+| `quarkus.multi-tenant.http.strategy`
+| `header,jwt,cookie`
+| Ordered list of built-in tenant resolution strategies.
+
+| `quarkus.multi-tenant.http.header-name`
+| `X-Tenant`
+| Header name used by the header resolver.
+
+| `quarkus.multi-tenant.http.jwt-claim-name`
+| `tenant`
+| JWT claim name used by the JWT resolver.
+
+| `quarkus.multi-tenant.http.cookie-name`
+| `tenant_cookie`
+| Cookie name used by the cookie resolver.
+
+| `quarkus.multi-tenant.http.default-tenant`
+| `public`
+| Tenant used when no resolver returns a value.
+
+| `quarkus.multi-tenant.http.path-pattern`
+| `^/t/([^/]+)(?:/{vbar}$)`
+| Regex used by the path resolver.
+
+| `quarkus.multi-tenant.http.path-group`
+| `1`
+| Capturing group used to extract the tenant from the path.
+|===
+
+== FAQ
+
+=== Is this the same as OIDC multitenancy?
+
+No.
+
+OIDC multitenancy focuses on selecting authentication provider configuration.
+
+Quarkus Multitenancy focuses on resolving and propagating the tenant identifier used by the application.
+
+=== Does this replace Hibernate ORM multitenancy?
+
+No.
+
+It complements Hibernate ORM multitenancy by providing consistent tenant resolution input for persistence routing.
+
+=== When should I use header, JWT, cookie, or path resolution?
+
+Header-based resolution is useful for service-to-service or gateway-driven architectures.
+
+JWT claim resolution is useful for authentication-centric flows where the tenant id is part of the token claims.
+
+Cookie-based resolution is useful for browser applications.
+
+Path-based resolution is useful for SaaS-style URLs such as `/t/acme/products`.
+
+== Demo
+
+A demo application is available in the repository and can be used to test HTTP and ORM tenant resolution locally.
+
+[source,bash]
+----
+git clone https://github.com/quarkiverse/quarkus-multitenancy
+cd quarkus-multitenancy/quarkus-multitenancy-demo
+mvn quarkus:dev
+----
+
+== Security note
+
+JWT tenant resolution is still under discussion. See the JWT signature verification tracking issue before relying on JWT-based tenant resolution for security-sensitive use cases.
