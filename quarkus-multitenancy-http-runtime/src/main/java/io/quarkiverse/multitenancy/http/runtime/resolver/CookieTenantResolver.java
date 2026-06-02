@@ -11,6 +11,7 @@ import org.jboss.logging.Logger;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolutionContext;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
+import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantStrategy;
 
 @ApplicationScoped
 public class CookieTenantResolver implements TenantResolver {
@@ -19,6 +20,11 @@ public class CookieTenantResolver implements TenantResolver {
 
     @Inject
     HttpTenantConfig config;
+
+    @Override
+    public String name() {
+        return HttpTenantStrategy.cookie.name();
+    }
 
     @Override
     public Optional<String> resolve(TenantResolutionContext context) {
