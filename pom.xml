@@ -92,4 +92,21 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!--
+                  Available for the future docs module: assembles the per-module
+                  config-doc model produced by quarkus-extension-processor into
+                  Asciidoc output (mandatory pipeline post-Quarkus 3.14).
+                -->
+                <plugin>
+                    <groupId>io.quarkus</groupId>
+                    <artifactId>quarkus-config-doc-maven-plugin</artifactId>
+                    <version>${quarkus.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
 </project>

@@ -1,0 +1,14 @@
+---
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+name: "Multitenancy - Hibernate ORM"
+description: "Hibernate ORM integration for multi-tenant data isolation."
+metadata:
+  keywords:
+    - "multitenancy"
+    - "multi-tenant"
+    - "tenant"
+    - "hibernate-orm"
+  guide: "https://quarkiverse.github.io/quarkiverse-docs/quarkus-multitenancy/dev/"
+  categories:
+    - "data"
+  status: "preview"
