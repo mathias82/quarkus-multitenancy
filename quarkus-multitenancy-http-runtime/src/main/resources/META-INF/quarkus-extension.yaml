@@ -1,0 +1,17 @@
+---
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+name: "Multitenancy - HTTP"
+description: "HTTP transport (header, cookie, JWT, or path) for tenant resolution."
+metadata:
+  keywords:
+    - "multitenancy"
+    - "multi-tenant"
+    - "tenant"
+    - "http"
+  guide: "https://quarkiverse.github.io/quarkiverse-docs/quarkus-multitenancy/dev/"
+  categories:
+    - "core"
+    - "web"
+  status: "preview"
+  config:
+    - "quarkus.multi-tenant.http."

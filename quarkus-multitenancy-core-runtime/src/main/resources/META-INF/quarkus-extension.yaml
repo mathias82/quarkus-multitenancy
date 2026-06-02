@@ -1,0 +1,13 @@
+---
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+name: "Multitenancy"
+description: "Core API and CDI context for multi-tenant resolution."
+metadata:
+  keywords:
+    - "multitenancy"
+    - "multi-tenant"
+    - "tenant"
+  guide: "https://quarkiverse.github.io/quarkiverse-docs/quarkus-multitenancy/dev/"
+  categories:
+    - "core"
+  status: "preview"
