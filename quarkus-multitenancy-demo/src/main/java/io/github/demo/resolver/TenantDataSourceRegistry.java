@@ -1,13 +1,14 @@
 package io.github.demo.resolver;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.jboss.logging.Logger;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class TenantDataSourceRegistry {

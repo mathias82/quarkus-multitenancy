@@ -1,21 +1,23 @@
 package io.github.demo.resource;
 
-import io.github.demo.entity.User;
-import io.github.demo.resource.config.PostgresCheckProfile;
-import io.github.demo.resource.utils.DatabaseTestUtils;
-import io.github.mathias82.quarkus.multitenancy.core.runtime.context.TenantContext;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.*;
+
+import java.util.List;
+
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.hamcrest.Matchers.*;
+import io.github.demo.entity.User;
+import io.github.demo.resource.config.PostgresCheckProfile;
+import io.github.demo.resource.utils.DatabaseTestUtils;
+import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
+import io.restassured.RestAssured;
 
 @QuarkusTest
 @TestProfile(PostgresCheckProfile.class)

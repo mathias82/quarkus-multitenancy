@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>io.github.mathias82</groupId>
-        <artifactId>quarkus-multitenancy</artifactId>
-        <version>0.1.15</version>
+        <groupId>io.quarkiverse.multitenancy</groupId>
+        <artifactId>quarkus-multitenancy-parent</artifactId>
+        <version>999-SNAPSHOT</version>
     </parent>
 
-    <artifactId>quarkus-multitenancy-core-runtime</artifactId>
-    <name>Quarkus Multitenancy Core Runtime</name>
+    <artifactId>quarkus-multitenancy-core</artifactId>
+    <name>Quarkus Multitenancy - Core - Runtime</name>
     <description>Core runtime module providing the tenant resolution API and context management.</description>
     <packaging>jar</packaging>
 
