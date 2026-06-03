@@ -39,9 +39,8 @@ class JwtStrategyStartupValidatorTest {
     @Test
     void doesNothingWhenSkipFlagSet() {
         JwtStrategyStartupValidator v = newValidator(
-                fakeConfig(true, List.of("jwt")),
-                mpConfig(Map.of(
-                        "quarkus.multi-tenant.http.jwt.skip-startup-check", "true")));
+                fakeConfig(true, List.of("jwt"), true),
+                mpConfig(Map.of()));
         assertDoesNotThrow(() -> v.onStart(null));
     }
 
@@ -70,6 +69,30 @@ class JwtStrategyStartupValidatorTest {
                 mpConfig(Map.of(
                         "quarkus.oidc.auth-server-url", "https://issuer.example.com")));
         assertDoesNotThrow(() -> v.onStart(null));
+    }
+
+    @Test
+    void passesWhenOidcTenantSpecificAuthServerConfigured() {
+        // Multi-tenant OIDC apps configure quarkus.oidc.<tenant>.auth-server-url
+        // rather than the unqualified property. The validator must walk the
+        // resolved property names to detect those cases.
+        JwtStrategyStartupValidator v = newValidator(
+                fakeConfig(true, List.of("jwt")),
+                mpConfig(Map.of(
+                        "quarkus.oidc.acme.auth-server-url", "https://acme.example.com")));
+        assertDoesNotThrow(() -> v.onStart(null));
+    }
+
+    @Test
+    void ignoresUnrelatedOidcSubKeys() {
+        // Properties under quarkus.oidc.* that are NOT auth-server-url should
+        // not be treated as a verification source.
+        JwtStrategyStartupValidator v = newValidator(
+                fakeConfig(true, List.of("jwt")),
+                mpConfig(Map.of(
+                        "quarkus.oidc.client-id", "ignored",
+                        "quarkus.oidc.acme.client-id", "also-ignored")));
+        assertThrows(IllegalStateException.class, () -> v.onStart(null));
     }
 
     @Test
@@ -121,6 +144,10 @@ class JwtStrategyStartupValidatorTest {
     }
 
     private static HttpTenantConfig fakeConfig(boolean enabled, List<String> strategy) {
+        return fakeConfig(enabled, strategy, false);
+    }
+
+    private static HttpTenantConfig fakeConfig(boolean enabled, List<String> strategy, boolean skipStartupCheck) {
         return new HttpTenantConfig() {
             @Override
             public boolean enabled() {
@@ -160,6 +187,11 @@ class JwtStrategyStartupValidatorTest {
             @Override
             public int pathGroup() {
                 return 1;
+            }
+
+            @Override
+            public JwtConfig jwt() {
+                return () -> skipStartupCheck;
             }
         };
     }

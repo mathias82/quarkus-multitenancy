@@ -46,7 +46,11 @@ public class JwtStrategyStartupValidator {
             "mp.jwt.verify.publickey.location",
             "mp.jwt.verify.publickey");
 
-    private static final String OIDC_HINT = "quarkus.oidc.auth-server-url";
+    private static final String OIDC_DEFAULT_AUTH_SERVER_URL = "quarkus.oidc.auth-server-url";
+
+    private static final String OIDC_NAMED_TENANT_PREFIX = "quarkus.oidc.";
+
+    private static final String OIDC_AUTH_SERVER_URL_SUFFIX = ".auth-server-url";
 
     @Inject
     HttpTenantConfig config;
@@ -73,9 +77,9 @@ public class JwtStrategyStartupValidator {
                 "The 'jwt' tenant resolution strategy is enabled in "
                         + "quarkus.multi-tenant.http.strategy but no verified JsonWebToken source is configured. "
                         + "Configure SmallRye JWT (set 'mp.jwt.verify.publickey.location' or "
-                        + "'mp.jwt.verify.publickey') or Quarkus OIDC (set 'quarkus.oidc.auth-server-url'), "
-                        + "remove 'jwt' from the strategy chain, or set '" + SKIP_PROPERTY + "=true' "
-                        + "if you provide JsonWebToken via a custom producer.");
+                        + "'mp.jwt.verify.publickey') or Quarkus OIDC (set 'quarkus.oidc.auth-server-url' "
+                        + "or 'quarkus.oidc.<tenant>.auth-server-url'), remove 'jwt' from the strategy chain, "
+                        + "or set '" + SKIP_PROPERTY + "=true' if you provide JsonWebToken via a custom producer.");
     }
 
     private boolean jwtStrategyEnabled() {
@@ -91,17 +95,40 @@ public class JwtStrategyStartupValidator {
     }
 
     private boolean skipRequested() {
-        return mpConfig.getOptionalValue(SKIP_PROPERTY, Boolean.class).orElse(false);
+        return config.jwt().skipStartupCheck();
     }
 
     private boolean hasVerifiedJsonWebTokenSource() {
+        return hasSmallryeJwtConfigured() || hasOidcConfigured();
+    }
+
+    private boolean hasSmallryeJwtConfigured() {
         for (String hint : SMALLRYE_JWT_HINTS) {
-            Optional<String> value = mpConfig.getOptionalValue(hint, String.class);
-            if (value.isPresent() && !value.get().isBlank()) {
+            if (hasNonBlank(hint)) {
                 return true;
             }
         }
-        Optional<String> oidc = mpConfig.getOptionalValue(OIDC_HINT, String.class);
-        return oidc.isPresent() && !oidc.get().isBlank();
+        return false;
+    }
+
+    private boolean hasOidcConfigured() {
+        if (hasNonBlank(OIDC_DEFAULT_AUTH_SERVER_URL)) {
+            return true;
+        }
+        // Iterate the resolved property names to pick up tenant-specific OIDC
+        // configuration such as quarkus.oidc.<tenant>.auth-server-url.
+        for (String propertyName : mpConfig.getPropertyNames()) {
+            if (propertyName.startsWith(OIDC_NAMED_TENANT_PREFIX)
+                    && propertyName.endsWith(OIDC_AUTH_SERVER_URL_SUFFIX)
+                    && hasNonBlank(propertyName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasNonBlank(String key) {
+        Optional<String> value = mpConfig.getOptionalValue(key, String.class);
+        return value.isPresent() && !value.get().isBlank();
     }
 }

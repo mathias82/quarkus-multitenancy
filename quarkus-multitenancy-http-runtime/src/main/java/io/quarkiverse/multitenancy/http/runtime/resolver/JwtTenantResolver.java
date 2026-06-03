@@ -14,6 +14,7 @@ import io.quarkiverse.multitenancy.core.runtime.api.TenantResolutionContext;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantStrategy;
+import io.quarkus.security.identity.SecurityIdentity;
 
 /**
  * Resolves the tenant from a verified JWT bearer token.
@@ -56,11 +57,16 @@ public class JwtTenantResolver implements TenantResolver {
 
     private static final Logger logger = Logger.getLogger(JwtTenantResolver.class);
 
+    private static final String BEARER = "Bearer";
+
     @Inject
     HttpTenantConfig config;
 
     @Inject
     JsonWebToken jwt;
+
+    @Inject
+    SecurityIdentity identity;
 
     @Override
     public String name() {
@@ -75,18 +81,28 @@ public class JwtTenantResolver implements TenantResolver {
             return TenantResolution.notApplicable();
         }
 
-        String authHeader = reqOpt.get().getHeaderString("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            logger.debug("No bearer token on the request; JWT strategy not applicable");
-            return TenantResolution.notApplicable();
+        BearerHeader bearer = classifyAuthorization(reqOpt.get().getHeaderString("Authorization"));
+        switch (bearer) {
+            case ABSENT -> {
+                logger.debug("No bearer token on the request; JWT strategy not applicable");
+                return TenantResolution.notApplicable();
+            }
+            case MALFORMED -> {
+                logger.debug("Bearer scheme present but token is blank or malformed");
+                return TenantResolution.rejected("Bearer token is blank or malformed");
+            }
+            case PRESENT -> {
+                // fall through to verification check below
+            }
         }
 
-        // A bearer token was sent. SmallRye JWT has already attempted to
-        // verify it; an unpopulated principal name signals either a failed
-        // verification or a non-JWT credential injected via the null proxy.
-        if (jwt.getName() == null) {
-            logger.debug("Bearer token present but JsonWebToken is unpopulated (verification failed)");
-            return TenantResolution.rejected("JWT verification failed");
+        // A bearer token was sent. Quarkus security has already attempted to
+        // authenticate it. If the resulting identity is anonymous the token
+        // either failed verification or was not a JWT — in both cases we
+        // reject so the dispatcher cannot fall back to the default tenant.
+        if (identity.isAnonymous()) {
+            logger.debug("Bearer token present but request is anonymous; JWT authentication failed");
+            return TenantResolution.rejected("Bearer token was not authenticated");
         }
 
         String claimName = config.jwtClaimName();
@@ -95,11 +111,12 @@ public class JwtTenantResolver implements TenantResolver {
             logger.debugf("JWT verified but missing required tenant claim '%s'", claimName);
             return TenantResolution.rejected("JWT missing required tenant claim: " + claimName);
         }
-        if (!(rawClaim instanceof String tenant)) {
+        if (!(rawClaim instanceof String rawTenant)) {
             logger.debugf("JWT tenant claim '%s' is not a string (type=%s)",
                     claimName, rawClaim.getClass().getName());
             return TenantResolution.rejected("JWT tenant claim is not a string");
         }
+        String tenant = rawTenant.trim();
         if (tenant.isBlank()) {
             logger.debugf("JWT tenant claim '%s' is blank", claimName);
             return TenantResolution.rejected("JWT tenant claim is blank");
@@ -107,5 +124,34 @@ public class JwtTenantResolver implements TenantResolver {
 
         logger.debugf("Resolved tenant '%s' from JWT claim '%s'", tenant, claimName);
         return TenantResolution.resolved(tenant);
+    }
+
+    /**
+     * Classifies the {@code Authorization} header relative to the Bearer
+     * scheme. HTTP auth scheme tokens are case-insensitive per RFC 7235
+     * §2.1, so we match using {@link String#regionMatches(boolean, int, String, int, int)}.
+     */
+    private static BearerHeader classifyAuthorization(String header) {
+        if (header == null || header.isBlank()) {
+            return BearerHeader.ABSENT;
+        }
+        String trimmed = header.trim();
+        if (!trimmed.regionMatches(true, 0, BEARER, 0, BEARER.length())) {
+            return BearerHeader.ABSENT;
+        }
+        // The scheme matched. Anything past it must be a separator + non-blank
+        // token, otherwise the header carries an empty or malformed Bearer.
+        if (trimmed.length() == BEARER.length()
+                || !Character.isWhitespace(trimmed.charAt(BEARER.length()))) {
+            return BearerHeader.MALFORMED;
+        }
+        String token = trimmed.substring(BEARER.length() + 1).trim();
+        return token.isEmpty() ? BearerHeader.MALFORMED : BearerHeader.PRESENT;
+    }
+
+    private enum BearerHeader {
+        ABSENT,
+        MALFORMED,
+        PRESENT
     }
 }
