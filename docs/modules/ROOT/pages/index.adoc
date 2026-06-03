@@ -114,6 +114,31 @@ X-Tenant: acme
 
 will resolve the current tenant as `acme`.
 
+== Accessing the current tenant
+
+Application code can inject `TenantContext` to access the resolved tenant during request processing.
+
+[source,java]
+----
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+
+import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+
+@Path("/tenant")
+public class TenantResource {
+
+    @Inject
+    TenantContext tenantContext;
+
+    @GET
+    public String currentTenant() {
+        return tenantContext.getTenantId().orElse("public");
+    }
+}
+----
+
 == Resolution strategies
 
 === Header
@@ -233,6 +258,36 @@ Main options include:
 | `1`
 | Capturing group used to extract the tenant from the path.
 |===
+
+== ORM configuration
+
+The ORM module integrates the resolved tenant with Quarkus Hibernate ORM multitenancy.
+
+For database-based multitenancy, enable Hibernate ORM multitenancy and define one datasource per tenant:
+
+[source,properties]
+----
+quarkus.hibernate-orm.multitenant=DATABASE
+
+quarkus.datasource.__bootstrap.db-kind=postgresql
+quarkus.datasource.__bootstrap.jdbc.url=jdbc:postgresql://localhost:5433/postgres
+quarkus.datasource.__bootstrap.username=user1
+quarkus.datasource.__bootstrap.password=pass1
+
+quarkus.datasource.tenant1.db-kind=postgresql
+quarkus.datasource.tenant1.jdbc.url=jdbc:postgresql://localhost:5433/tenant1
+quarkus.datasource.tenant1.username=user1
+quarkus.datasource.tenant1.password=pass1
+
+quarkus.datasource.tenant2.db-kind=postgresql
+quarkus.datasource.tenant2.jdbc.url=jdbc:postgresql://localhost:5434/tenant2
+quarkus.datasource.tenant2.username=user2
+quarkus.datasource.tenant2.password=pass2
+----
+
+The ORM adapter uses the tenant id stored in `TenantContext` to resolve the current Hibernate ORM tenant.
+
+The special `__bootstrap` tenant is used as the default/bootstrap tenant before a request tenant is available.
 
 == FAQ
 
