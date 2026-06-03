@@ -8,6 +8,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.multitenancy.core.runtime.api.TenantResolution;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolutionContext;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
@@ -27,29 +28,29 @@ public class CookieTenantResolver implements TenantResolver {
     }
 
     @Override
-    public Optional<String> resolve(TenantResolutionContext context) {
+    public TenantResolution resolve(TenantResolutionContext context) {
         Optional<ContainerRequestContext> reqOpt = context.get(ContainerRequestContext.class);
         if (reqOpt.isEmpty()) {
-            logger.info("No request context found");
-            return Optional.empty();
+            logger.debug("No request context found");
+            return TenantResolution.notApplicable();
         }
 
         ContainerRequestContext req = reqOpt.get();
         String cookieName = config.cookieName();
 
         if (req.getCookies() == null || req.getCookies().isEmpty()) {
-            logger.info("No cookies found in request");
-            return Optional.empty();
+            logger.debug("No cookies found in request");
+            return TenantResolution.notApplicable();
         }
 
         var cookie = req.getCookies().get(cookieName);
         if (cookie == null || cookie.getValue() == null || cookie.getValue().isBlank()) {
             logger.debugf("Cookie '%s' not found or empty", cookieName);
-            return Optional.empty();
+            return TenantResolution.notApplicable();
         }
 
         String tenant = cookie.getValue().trim();
-        logger.infof("Tenant cookie value resolved = '%s'", tenant);
-        return Optional.of(tenant);
+        logger.debugf("Resolved tenant '%s' from cookie '%s'", tenant, cookieName);
+        return TenantResolution.resolved(tenant);
     }
 }

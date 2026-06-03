@@ -13,10 +13,12 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.multitenancy.core.runtime.api.TenantResolution;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
@@ -39,8 +41,21 @@ import io.quarkiverse.multitenancy.http.runtime.ctx.HttpTenantResolutionContext;
  * </ol>
  *
  * <p>
- * If no resolver returns a value, the filter falls back to
- * {@link HttpTenantConfig#defaultTenant()}.
+ * Each invocation produces a {@link TenantResolution} outcome:
+ * <ul>
+ * <li>{@link TenantResolution.Resolved} — sets the tenant context and stops
+ * the chain.</li>
+ * <li>{@link TenantResolution.NotApplicable} — the dispatcher tries the next
+ * resolver/strategy.</li>
+ * <li>{@link TenantResolution.Rejected} — aborts the request with 401. The
+ * filter must <strong>not</strong> fall back to
+ * {@link HttpTenantConfig#defaultTenant()}, since a present-but-invalid
+ * credential cannot silently downgrade to the default tenant.</li>
+ * </ul>
+ *
+ * <p>
+ * If every resolver in the chain returns {@code NotApplicable}, the filter
+ * falls back to {@link HttpTenantConfig#defaultTenant()}.
  */
 @Provider
 @Priority(Priorities.AUTHENTICATION)
@@ -74,51 +89,59 @@ public class TenantFilter implements ContainerRequestFilter {
 
         HttpTenantResolutionContext ctx = new HttpTenantResolutionContext(requestContext);
 
-        Optional<String> tenant = runCustomResolvers(ctx);
+        TenantResolution outcome = runCustomResolvers(ctx);
 
-        if (tenant.isEmpty()) {
-            tenant = runConfiguredBuiltins(ctx);
+        if (outcome instanceof TenantResolution.NotApplicable) {
+            outcome = runConfiguredBuiltins(ctx);
         }
 
-        String resolved = tenant.orElseGet(config::defaultTenant);
-        tenantContext.setTenantId(resolved);
-
-        if (tenant.isPresent()) {
-            logger.infof("Tenant successfully resolved: '%s'", resolved);
-        } else {
-            logger.debugf("No tenant resolved, falling back to default: '%s'", resolved);
+        if (outcome instanceof TenantResolution.Resolved resolved) {
+            tenantContext.setTenantId(resolved.tenantId());
+            logger.debugf("Tenant resolved: '%s'", resolved.tenantId());
+            return;
         }
+
+        if (outcome instanceof TenantResolution.Rejected rejected) {
+            logger.debugf("Tenant resolution rejected: %s", rejected.reason());
+            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+            return;
+        }
+
+        // NotApplicable across the whole chain → fall back to the default tenant.
+        String defaultTenant = config.defaultTenant();
+        tenantContext.setTenantId(defaultTenant);
+        logger.debugf("No resolver matched; falling back to default tenant '%s'", defaultTenant);
     }
 
-    private Optional<String> runCustomResolvers(HttpTenantResolutionContext ctx) {
+    private TenantResolution runCustomResolvers(HttpTenantResolutionContext ctx) {
         for (TenantResolver r : resolvers) {
             if (isCustom(r)) {
-                Optional<String> result = r.resolve(ctx);
-                if (result.isPresent()) {
+                TenantResolution result = r.resolve(ctx);
+                if (!(result instanceof TenantResolution.NotApplicable)) {
                     return result;
                 }
             }
         }
-        return Optional.empty();
+        return TenantResolution.notApplicable();
     }
 
-    private Optional<String> runConfiguredBuiltins(HttpTenantResolutionContext ctx) {
+    private TenantResolution runConfiguredBuiltins(HttpTenantResolutionContext ctx) {
         for (String configured : config.strategy()) {
             HttpTenantStrategy strategy = parseStrategy(configured);
             if (strategy == null) {
                 continue;
             }
             Optional<TenantResolver> match = findBuiltin(strategy);
-            if (match.isPresent()) {
-                Optional<String> result = match.get().resolve(ctx);
-                if (result.isPresent()) {
-                    return result;
-                }
-            } else {
+            if (match.isEmpty()) {
                 logger.debugf("No built-in resolver registered for strategy '%s'", strategy);
+                continue;
+            }
+            TenantResolution result = match.get().resolve(ctx);
+            if (!(result instanceof TenantResolution.NotApplicable)) {
+                return result;
             }
         }
-        return Optional.empty();
+        return TenantResolution.notApplicable();
     }
 
     private HttpTenantStrategy parseStrategy(String configured) {

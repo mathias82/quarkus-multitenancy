@@ -203,13 +203,42 @@ This strategy does not rewrite the URL or perform request routing. It only extra
 
 === JWT claim
 
+The JWT resolver reads the tenant from a claim in a *verified* bearer token. SmallRye JWT performs the signature check before the resolver runs, so applications must configure a verification source before enabling the strategy.
+
 [source,properties]
 ----
 quarkus.multi-tenant.http.strategy=jwt
 quarkus.multi-tenant.http.jwt-claim-name=tenant
+
+mp.jwt.verify.publickey.location=publicKey.pem
+mp.jwt.verify.publickey.algorithm=RS256
+mp.jwt.verify.issuer=https://my-issuer.example.com
 ----
 
-IMPORTANT: JWT signature verification behavior is still under discussion. Do not rely on JWT tenant resolution for security-sensitive use cases until the JWT verification strategy is finalized.
+==== Operator contract
+
+* Configure SmallRye JWT (any combination of `mp.jwt.verify.publickey.location`, `mp.jwt.verify.publickey`, or related properties) *or* Quarkus OIDC (`quarkus.oidc.auth-server-url`). The extension fails to start if `jwt` is in the strategy chain and neither source is configured. Set `quarkus.multi-tenant.http.jwt.skip-startup-check=true` to opt out — for example when wiring a custom `JsonWebToken` producer.
+* Pin the signature algorithm with `mp.jwt.verify.publickey.algorithm`. Never enable both symmetric and asymmetric verifiers at once.
+* The `default-tenant` fallback only applies when no strategy in the chain produces a result. A bearer token that fails verification or is missing the required claim *rejects* the request with HTTP 401; it does not silently fall back to the default tenant.
+
+==== Resolution outcomes
+
+[cols="2,3", options="header"]
+|===
+| Input | Result
+
+| No `Authorization: Bearer …` header
+| JWT strategy returns `NotApplicable`; the dispatcher tries the next strategy.
+
+| Verified token whose `jwt-claim-name` claim is a non-blank string
+| Tenant is resolved to that string.
+
+| Verified token but the claim is missing, non-string, or blank
+| Request rejected with HTTP 401.
+
+| Bearer header present but the token cannot be verified (bad signature, wrong issuer, expired, …)
+| Request rejected with HTTP 401.
+|===
 
 == Configuration
 
@@ -328,4 +357,4 @@ mvn quarkus:dev
 
 == Security note
 
-JWT tenant resolution is still under discussion. See the JWT signature verification tracking issue before relying on JWT-based tenant resolution for security-sensitive use cases.
+The JWT tenant strategy verifies bearer tokens through SmallRye JWT or OIDC before reading the tenant claim, and rejects requests with HTTP 401 whenever a token is present but cannot be trusted. Operators are responsible for configuring a verification source and pinning the signature algorithm — see the operator contract under the JWT claim strategy.

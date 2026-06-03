@@ -1,6 +1,8 @@
 package io.quarkiverse.multitenancy.core.runtime.core;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +13,7 @@ import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkiverse.multitenancy.core.runtime.api.TenantResolution;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolutionContext;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 import io.quarkus.test.junit.QuarkusTest;
@@ -26,10 +29,10 @@ class CompositeTenantResolverTest {
         TestTenantResolutionContext ctx = new TestTenantResolutionContext();
         ctx.put(String.class, "tenant-header");
 
-        Optional<String> tenant = compositeTenantResolver.resolve(ctx);
+        TenantResolution result = compositeTenantResolver.resolve(ctx);
 
-        assertTrue(tenant.isPresent());
-        assertEquals("tenant-header", tenant.get());
+        TenantResolution.Resolved resolved = assertInstanceOf(TenantResolution.Resolved.class, result);
+        assertEquals("tenant-header", resolved.tenantId());
     }
 
     @Test
@@ -37,19 +40,19 @@ class CompositeTenantResolverTest {
         TestTenantResolutionContext ctx = new TestTenantResolutionContext();
         ctx.put(Integer.class, 777);
 
-        Optional<String> tenant = compositeTenantResolver.resolve(ctx);
+        TenantResolution result = compositeTenantResolver.resolve(ctx);
 
-        assertTrue(tenant.isPresent());
-        assertEquals("777", tenant.get());
+        TenantResolution.Resolved resolved = assertInstanceOf(TenantResolution.Resolved.class, result);
+        assertEquals("777", resolved.tenantId());
     }
 
     @Test
-    void shouldReturnEmptyIfNoResolversMatch() {
+    void shouldReturnNotApplicableIfNoResolversMatch() {
         TestTenantResolutionContext ctx = new TestTenantResolutionContext();
 
-        Optional<String> tenant = compositeTenantResolver.resolve(ctx);
+        TenantResolution result = compositeTenantResolver.resolve(ctx);
 
-        assertTrue(tenant.isEmpty());
+        assertTrue(result instanceof TenantResolution.NotApplicable);
     }
 
     static class TestTenantResolutionContext implements TenantResolutionContext {
@@ -69,16 +72,20 @@ class CompositeTenantResolverTest {
     @ApplicationScoped
     static class HeaderTenantResolver implements TenantResolver {
         @Override
-        public Optional<String> resolve(TenantResolutionContext context) {
-            return context.get(String.class);
+        public TenantResolution resolve(TenantResolutionContext context) {
+            return context.get(String.class)
+                    .<TenantResolution> map(TenantResolution::resolved)
+                    .orElseGet(TenantResolution::notApplicable);
         }
     }
 
     @ApplicationScoped
     static class CookieTenantResolver implements TenantResolver {
         @Override
-        public Optional<String> resolve(TenantResolutionContext context) {
-            return context.get(Integer.class).map(Object::toString);
+        public TenantResolution resolve(TenantResolutionContext context) {
+            return context.get(Integer.class)
+                    .<TenantResolution> map(i -> TenantResolution.resolved(i.toString()))
+                    .orElseGet(TenantResolution::notApplicable);
         }
     }
 }

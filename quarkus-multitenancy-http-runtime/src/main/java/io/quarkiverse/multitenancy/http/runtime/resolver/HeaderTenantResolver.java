@@ -8,6 +8,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.multitenancy.core.runtime.api.TenantResolution;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolutionContext;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
@@ -27,11 +28,11 @@ public class HeaderTenantResolver implements TenantResolver {
     }
 
     @Override
-    public Optional<String> resolve(TenantResolutionContext context) {
+    public TenantResolution resolve(TenantResolutionContext context) {
         Optional<ContainerRequestContext> reqOpt = context.get(ContainerRequestContext.class);
         if (reqOpt.isEmpty()) {
             logger.debug("No request context found");
-            return Optional.empty();
+            return TenantResolution.notApplicable();
         }
 
         String headerName = config.headerName();
@@ -39,11 +40,11 @@ public class HeaderTenantResolver implements TenantResolver {
 
         if (header == null || header.isBlank()) {
             logger.debugf("Header '%s' not found or empty", headerName);
-            return Optional.empty();
+            return TenantResolution.notApplicable();
         }
 
         String tenant = header.trim();
-        logger.infof("Tenant header '%s' value resolved = '%s'", headerName, tenant);
-        return Optional.of(tenant);
+        logger.debugf("Resolved tenant '%s' from header '%s'", tenant, headerName);
+        return TenantResolution.resolved(tenant);
     }
 }
