@@ -2,6 +2,8 @@ package io.quarkiverse.multitenancy.http.runtime.config;
 
 import java.util.List;
 
+import io.quarkus.runtime.annotations.ConfigPhase;
+import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 
@@ -9,6 +11,7 @@ import io.smallrye.config.WithDefault;
  * Runtime configuration for the Quarkus multitenancy HTTP module.
  */
 @ConfigMapping(prefix = "quarkus.multi-tenant.http")
+@ConfigRoot(phase = ConfigPhase.RUN_TIME)
 public interface HttpTenantConfig {
 
     /**
