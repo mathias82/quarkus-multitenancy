@@ -1,0 +1,3 @@
+:extension-name: Quarkus Multitenancy
+:extension-artifact-id: quarkus-multitenancy
+:project-version: {page-component-version}
