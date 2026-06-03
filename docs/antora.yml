@@ -1,5 +1,5 @@
 name: quarkus-multitenancy
-title: Quarkus Multitenancy
+title: Multitenancy
 version: dev
 nav:
   - modules/ROOT/nav.adoc
