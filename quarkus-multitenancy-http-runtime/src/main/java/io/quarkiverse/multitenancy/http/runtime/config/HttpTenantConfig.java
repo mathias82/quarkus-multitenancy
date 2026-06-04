@@ -77,4 +77,26 @@ public interface HttpTenantConfig {
      */
     @WithDefault("1")
     int pathGroup();
+
+    /**
+     * JWT-strategy specific configuration.
+     */
+    JwtConfig jwt();
+
+    /**
+     * Settings consulted by the {@code jwt} resolution strategy and its
+     * startup-time validator.
+     */
+    interface JwtConfig {
+
+        /**
+         * Opt out of the {@code JwtStrategyStartupValidator}'s fail-fast
+         * check. Useful when {@code JsonWebToken} is produced by a custom
+         * bean rather than the standard SmallRye JWT / Quarkus OIDC paths.
+         * Setting this to {@code true} leaves the operator responsible for
+         * ensuring an authenticated identity reaches the filter.
+         */
+        @WithDefault("false")
+        boolean skipStartupCheck();
+    }
 }

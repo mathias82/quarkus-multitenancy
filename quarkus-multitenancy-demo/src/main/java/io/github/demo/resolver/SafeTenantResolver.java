@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
 
 import io.github.demo.exception.TenantNotFoundException;
+import io.quarkiverse.multitenancy.core.runtime.api.TenantResolution;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolutionContext;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 
@@ -19,18 +20,18 @@ public class SafeTenantResolver implements TenantResolver {
     TenantDataSourceRegistry registry;
 
     @Override
-    public Optional<String> resolve(TenantResolutionContext context) {
+    public TenantResolution resolve(TenantResolutionContext context) {
         Optional<ContainerRequestContext> reqOpt = context.get(ContainerRequestContext.class);
 
         if (reqOpt.isEmpty()) {
-            return Optional.empty();
+            return TenantResolution.notApplicable();
         }
 
         ContainerRequestContext req = reqOpt.get();
         String tenantId = req.getHeaderString(HEADER_NAME);
 
         if (tenantId == null || tenantId.isBlank()) {
-            return Optional.empty();
+            return TenantResolution.notApplicable();
         }
 
         tenantId = tenantId.trim();
@@ -39,6 +40,6 @@ public class SafeTenantResolver implements TenantResolver {
             throw new TenantNotFoundException(tenantId);
         }
 
-        return Optional.of(tenantId);
+        return TenantResolution.resolved(tenantId);
     }
 }

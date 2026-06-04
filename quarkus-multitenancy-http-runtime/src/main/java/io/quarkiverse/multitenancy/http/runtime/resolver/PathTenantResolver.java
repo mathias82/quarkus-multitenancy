@@ -12,6 +12,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.multitenancy.core.runtime.api.TenantResolution;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolutionContext;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
@@ -60,16 +61,16 @@ public class PathTenantResolver implements TenantResolver {
     }
 
     @Override
-    public Optional<String> resolve(TenantResolutionContext context) {
+    public TenantResolution resolve(TenantResolutionContext context) {
         Optional<ContainerRequestContext> reqOpt = context.get(ContainerRequestContext.class);
         if (reqOpt.isEmpty()) {
             logger.debug("No request context found");
-            return Optional.empty();
+            return TenantResolution.notApplicable();
         }
 
         String path = reqOpt.get().getUriInfo().getPath();
         if (path == null || path.isBlank()) {
-            return Optional.empty();
+            return TenantResolution.notApplicable();
         }
 
         // UriInfo#getPath() drops the leading slash; restore it so users can
@@ -79,16 +80,16 @@ public class PathTenantResolver implements TenantResolver {
         Matcher matcher = pattern.matcher(normalized);
         if (!matcher.find()) {
             logger.debugf("Path '%s' did not match pattern '%s'", normalized, pattern.pattern());
-            return Optional.empty();
+            return TenantResolution.notApplicable();
         }
 
         String tenant = matcher.group(group);
         if (tenant == null || tenant.isBlank()) {
-            return Optional.empty();
+            return TenantResolution.notApplicable();
         }
 
         String trimmed = tenant.trim();
-        logger.debugf("Tenant resolved from path '%s' = '%s'", normalized, trimmed);
-        return Optional.of(trimmed);
+        logger.debugf("Resolved tenant '%s' from path '%s'", trimmed, normalized);
+        return TenantResolution.resolved(trimmed);
     }
 }
