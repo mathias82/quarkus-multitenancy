@@ -1,6 +1,7 @@
 package io.quarkiverse.multitenancy.orm.runtime.filter;
 
 import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.WebApplicationException;
@@ -11,9 +12,11 @@ import jakarta.ws.rs.ext.Provider;
 import org.jboss.logging.Logger;
 
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+import io.quarkiverse.multitenancy.orm.runtime.config.OrmTenantConfig;
 
 @Provider
 @Priority(Priorities.AUTHENTICATION)
+@ApplicationScoped
 public class OrmTenantHeaderFilter implements ContainerRequestFilter {
 
     private static final Logger logger = Logger.getLogger(OrmTenantHeaderFilter.class);
@@ -22,8 +25,15 @@ public class OrmTenantHeaderFilter implements ContainerRequestFilter {
     @Inject
     TenantContext tenantContext;
 
+    @Inject
+    OrmTenantConfig config;
+
     @Override
     public void filter(ContainerRequestContext requestContext) {
+
+        if (!config.headerFilter().enabled()) {
+            return;
+        }
 
         String tenant = requestContext.getHeaderString(TENANT_HEADER);
 
