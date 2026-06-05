@@ -109,6 +109,39 @@ class ImplicitDefaultStrategyWarnerTest {
         assertTrue(capture.sawWarningContaining("implicit default chain"));
     }
 
+    /**
+     * Regression for the production-only bug surfaced while exercising the
+     * extension in a real Quarkus application: SmallRye Config exposes
+     * {@code @WithDefault} values through a synthetic {@code DefaultValuesConfigSource}
+     * pinned at {@link Integer#MIN_VALUE} ordinal. A naive iteration of
+     * {@link Config#getPropertyNames()} therefore sees the strategy key even when
+     * the user never set it, which would silence the warning in the very case it
+     * exists to flag. The warner now uses the {@link io.smallrye.config.ConfigValue}
+     * ordinal to filter that source out, and this test pins that behaviour by
+     * registering a source that mimics the default-values one.
+     */
+    @Test
+    void warnsEvenWhenDefaultValuesSourceExposesTheKey() {
+        ImplicitDefaultStrategyWarner w = newWarner(
+                fakeConfig(true, List.of("header", "jwt", "cookie")),
+                mpConfigWithDefaultValuesSource("header,jwt,cookie"));
+
+        assertDoesNotThrow(() -> w.onStart(null));
+        assertTrue(capture.sawWarningContaining("implicit default chain"),
+                "A property surfaced only by the default-values source must still be treated as implicit.");
+    }
+
+    @Test
+    void doesNotWarnWhenUserSourceOverridesDefaultValuesSource() {
+        ImplicitDefaultStrategyWarner w = newWarner(
+                fakeConfig(true, List.of("header", "jwt", "cookie")),
+                mpConfigWithDefaultValuesAndOverride("header,jwt,cookie", "header,jwt,cookie"));
+
+        assertDoesNotThrow(() -> w.onStart(null));
+        assertFalse(capture.anyWarning(),
+                "An explicit user source must win over the default-values source even when the value matches.");
+    }
+
     private static ImplicitDefaultStrategyWarner newWarner(HttpTenantConfig httpConfig, Config mpConfig) {
         ImplicitDefaultStrategyWarner w = new ImplicitDefaultStrategyWarner();
         w.config = httpConfig;
@@ -119,6 +152,29 @@ class ImplicitDefaultStrategyWarnerTest {
     private static Config mpConfig(Map<String, String> values) {
         return new SmallRyeConfigBuilder()
                 .withSources(new PropertiesConfigSource(values, "test", 100))
+                .build();
+    }
+
+    private static Config mpConfigWithDefaultValuesSource(String strategyValue) {
+        return new SmallRyeConfigBuilder()
+                .withSources(new PropertiesConfigSource(
+                        Map.of("quarkus.multi-tenant.http.strategy", strategyValue),
+                        "DefaultValuesConfigSource",
+                        Integer.MIN_VALUE))
+                .build();
+    }
+
+    private static Config mpConfigWithDefaultValuesAndOverride(String defaultValue, String userValue) {
+        return new SmallRyeConfigBuilder()
+                .withSources(
+                        new PropertiesConfigSource(
+                                Map.of("quarkus.multi-tenant.http.strategy", defaultValue),
+                                "DefaultValuesConfigSource",
+                                Integer.MIN_VALUE),
+                        new PropertiesConfigSource(
+                                Map.of("quarkus.multi-tenant.http.strategy", userValue),
+                                "application.properties",
+                                250))
                 .build();
     }
 

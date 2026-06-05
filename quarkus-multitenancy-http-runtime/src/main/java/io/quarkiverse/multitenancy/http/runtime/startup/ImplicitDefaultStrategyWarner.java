@@ -89,18 +89,23 @@ public class ImplicitDefaultStrategyWarner {
     }
 
     /**
-     * Returns {@code true} when {@code quarkus.multi-tenant.http.strategy} is set
-     * by any active SmallRye {@link org.eclipse.microprofile.config.spi.ConfigSource},
-     * which is how SmallRye Config distinguishes an explicit user value from a
-     * {@code @WithDefault} fallback. Environment variable overrides such as
-     * {@code QUARKUS_MULTI_TENANT_HTTP_STRATEGY} are surfaced under the same
-     * dotted name and therefore also qualify as explicit.
+     * Returns {@code true} when {@code quarkus.multi-tenant.http.strategy} is provided
+     * by a {@link org.eclipse.microprofile.config.spi.ConfigSource} that the user
+     * controls (an application property file, environment variable, system property,
+     * dev-services source, etc.) rather than by the {@code @WithDefault} fallback.
+     *
+     * <p>
+     * Implementation note: SmallRye Config also exposes {@code @WithDefault} values
+     * through a synthetic source named {@code "DefaultValuesConfigSource"} pinned at
+     * {@link Integer#MIN_VALUE} ordinal, so naively iterating
+     * {@link org.eclipse.microprofile.config.Config#getPropertyNames()} sees the
+     * property even when the user never set it. The ordinal check below is the
+     * portable way to filter those out — any explicit source has a higher ordinal.
      */
     private boolean strategyIsExplicit() {
-        for (String propertyName : mpConfig.getPropertyNames()) {
-            if (STRATEGY_PROPERTY.equals(propertyName)) {
-                return true;
-            }
+        if (mpConfig instanceof io.smallrye.config.SmallRyeConfig sconfig) {
+            io.smallrye.config.ConfigValue cv = sconfig.getConfigValue(STRATEGY_PROPERTY);
+            return cv.getValue() != null && cv.getConfigSourceOrdinal() > Integer.MIN_VALUE;
         }
         return false;
     }
