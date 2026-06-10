@@ -19,6 +19,8 @@ Initial Quarkiverse preview release.
 - Quarkiverse CI/CD canonical workflow set (`build`, `pre-release`, `release`, `perform-release`).
 - Daily CI against the Quarkus snapshot via `quarkus-ecosystem-ci`.
 - Initial Asciidoc documentation module published at `docs.quarkiverse.io/quarkus-multitenancy`.
+- ORM module: `quarkus.multi-tenant.orm.header-filter.enabled` flag to opt out of the `X-Tenant` header filter (`OrmTenantHeaderFilter`), for applications that drive tenant resolution from `quarkus-multitenancy-http` instead of the ORM-side filter.
+- Startup warning when the `jwt` strategy is active only through the implicit default chain (`quarkus.multi-tenant.http.strategy` unset), signalling the upcoming default-chain change (#15). The warning is informational and does not change behaviour.
 
 ### Changed
 
@@ -34,4 +36,5 @@ Initial Quarkiverse preview release.
     - SmallRye JWT verification via `mp.jwt.verify.publickey.*` and `mp.jwt.verify.issuer`.
     - Quarkus OIDC via `quarkus.oidc.auth-server-url` (or a named-tenant equivalent such as `quarkus.oidc.<tenant>.auth-server-url`).
 - Applications that produce a custom `JsonWebToken` outside of SmallRye JWT / OIDC can opt out of the boot-time verification check with `quarkus.multi-tenant.http.jwt.skip-startup-check=true`.
+- The `quarkus-multitenancy-orm` module registers an `X-Tenant` header filter by default that rejects requests without the header (HTTP 400). When tenant resolution is driven by `quarkus-multitenancy-http` (path, jwt, or cookie), disable the ORM-side filter with `quarkus.multi-tenant.orm.header-filter.enabled=false` to avoid the two filters colliding on the request lifecycle. The resolved tenant still reaches Hibernate ORM through the shared `TenantContext`.
 - Tenants resolved from any strategy are propagated through the same `TenantContext`. The extension does not enforce length, charset, or log-injection guards on the resolved identifier; downstream consumers should treat the value as untrusted input until a future hardening release lands.

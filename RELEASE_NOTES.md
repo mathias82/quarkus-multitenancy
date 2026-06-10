@@ -59,9 +59,21 @@ quarkus.oidc.customer.auth-server-url=https://customer.example.com
 
 A startup check fails fast if `jwt` is enabled with no verification source. Applications that produce their own `JsonWebToken` outside of SmallRye/OIDC can opt out with `quarkus.multi-tenant.http.jwt.skip-startup-check=true`.
 
+When `jwt` is active only because of the implicit default chain (you never set `quarkus.multi-tenant.http.strategy`), the extension now logs a startup warning. This is step 1 of the deprecation cycle that will move the default chain to `header,cookie` (issue [#15](https://github.com/quarkiverse/quarkus-multitenancy/issues/15)); it is informational and changes no behaviour.
+
 ### Path-based resolution
 
 A `PathTenantResolver` extracts the tenant from a configurable URL pattern (`^/t/([^/]+)(?:/|$)` by default). It is **not** in the default chain — opt in by adding `path` to `quarkus.multi-tenant.http.strategy`.
+
+### ORM header-filter opt-out
+
+The `quarkus-multitenancy-orm` module registers an `X-Tenant` header filter by default (rejecting header-less requests with HTTP 400). When the HTTP module drives resolution instead, opt out with:
+
+```properties
+quarkus.multi-tenant.orm.header-filter.enabled=false
+```
+
+The resolved tenant still reaches Hibernate ORM through the shared `TenantContext`.
 
 ### Quarkiverse alignment
 
