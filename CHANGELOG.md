@@ -1,6 +1,16 @@
 # Changelog
 
-## 0.1.0 - Unreleased
+## Unreleased
+
+### Added
+
+- Tenant identifier hardening: a resolved tenant id is now validated against a configurable maximum length (`quarkus.multi-tenant.http.tenant-id.max-length`, default `64`) and a character-set pattern (`quarkus.multi-tenant.http.tenant-id.pattern`, default `[A-Za-z0-9_-]+`) before it is published to the `TenantContext`. A violating identifier is rejected with HTTP 401 and never reaches downstream consumers (logs, SQL parameters, ORM tenant lookups). Rejected identifiers are sanitised — control characters stripped and length-capped — before being logged, closing a log-injection vector. (#16)
+
+### Changed
+
+- **Behaviour change:** tenant-id validation is enabled by default. An application whose tenant identifiers contain characters outside `[A-Za-z0-9_-]` or exceed 64 characters will now receive HTTP 401 where `0.1.0` accepted the request. Widen `quarkus.multi-tenant.http.tenant-id.pattern` / `quarkus.multi-tenant.http.tenant-id.max-length`, or set `quarkus.multi-tenant.http.tenant-id.validation-enabled=false`, to restore the previous behaviour.
+
+## 0.1.0
 
 Initial Quarkiverse preview release.
 
