@@ -7,7 +7,7 @@ metadata:
     - "multitenancy"
     - "multi-tenant"
     - "tenant"
-  guide: "https://quarkiverse.github.io/quarkiverse-docs/quarkus-multitenancy/dev/"
+  guide: "https://docs.quarkiverse.io/quarkus-multitenancy/dev/"
   categories:
     - "core"
   status: "preview"
