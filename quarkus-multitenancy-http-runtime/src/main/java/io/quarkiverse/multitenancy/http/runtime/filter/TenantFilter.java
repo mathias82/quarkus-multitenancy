@@ -24,6 +24,7 @@ import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantStrategy;
 import io.quarkiverse.multitenancy.http.runtime.ctx.HttpTenantResolutionContext;
+import io.quarkiverse.multitenancy.http.runtime.validation.TenantIdValidator;
 
 /**
  * HTTP tenant filter that resolves the current tenant using a strategy chain
@@ -77,6 +78,9 @@ public class TenantFilter implements ContainerRequestFilter {
     @Inject
     HttpTenantConfig config;
 
+    @Inject
+    TenantIdValidator tenantIdValidator;
+
     @Override
     public void filter(ContainerRequestContext requestContext) {
 
@@ -96,8 +100,14 @@ public class TenantFilter implements ContainerRequestFilter {
         }
 
         if (outcome instanceof TenantResolution.Resolved resolved) {
+            Optional<String> rejection = tenantIdValidator.validate(resolved.tenantId());
+            if (rejection.isPresent()) {
+                logger.warnf("Rejecting resolved tenant id: %s", rejection.get());
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+                return;
+            }
             tenantContext.setTenantId(resolved.tenantId());
-            logger.debugf("Tenant resolved: '%s'", resolved.tenantId());
+            logger.debugf("Tenant resolved: '%s'", TenantIdValidator.sanitizeForLog(resolved.tenantId()));
             return;
         }
 

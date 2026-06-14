@@ -84,6 +84,14 @@ public interface HttpTenantConfig {
     JwtConfig jwt();
 
     /**
+     * Validation applied to a tenant identifier once a resolver has produced
+     * it, before it is published to the {@code TenantContext}. The same policy
+     * covers built-in and custom resolvers, since every {@code Resolved}
+     * outcome passes through the HTTP filter.
+     */
+    TenantIdConfig tenantId();
+
+    /**
      * Settings consulted by the {@code jwt} resolution strategy and its
      * startup-time validator.
      */
@@ -98,5 +106,39 @@ public interface HttpTenantConfig {
          */
         @WithDefault("false")
         boolean skipStartupCheck();
+    }
+
+    /**
+     * Length and character-set policy for a resolved tenant identifier.
+     */
+    interface TenantIdConfig {
+
+        /**
+         * Whether a resolved tenant identifier is validated against
+         * {@link #maxLength()} and {@link #pattern()}. When {@code true}
+         * (the default), an identifier that violates the policy is rejected
+         * with HTTP 401 and never reaches the {@code TenantContext}, closing
+         * length- and injection-based abuse of downstream consumers such as
+         * logs, SQL parameters and ORM tenant lookups.
+         */
+        @WithDefault("true")
+        boolean validationEnabled();
+
+        /**
+         * Maximum number of characters allowed in a resolved tenant
+         * identifier. An identifier longer than this is rejected.
+         */
+        @WithDefault("64")
+        int maxLength();
+
+        /**
+         * Regular expression a resolved tenant identifier must match in full.
+         * The default allows ASCII letters, digits, hyphen and underscore,
+         * which is safe to propagate into logs, SQL parameters and ORM tenant
+         * lookups. Widen it deliberately if your tenant identifiers use a
+         * richer character set.
+         */
+        @WithDefault("[A-Za-z0-9_-]+")
+        String pattern();
     }
 }

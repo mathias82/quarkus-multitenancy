@@ -193,6 +193,26 @@ class JwtStrategyStartupValidatorTest {
             public JwtConfig jwt() {
                 return () -> skipStartupCheck;
             }
+
+            @Override
+            public TenantIdConfig tenantId() {
+                return new TenantIdConfig() {
+                    @Override
+                    public boolean validationEnabled() {
+                        return true;
+                    }
+
+                    @Override
+                    public int maxLength() {
+                        return 64;
+                    }
+
+                    @Override
+                    public String pattern() {
+                        return "[A-Za-z0-9_-]+";
+                    }
+                };
+            }
         };
     }
 }
