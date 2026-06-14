@@ -122,6 +122,32 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <!--
+              Apache-2.0 source headers. Configured (not bound to a phase) so the headers
+              can be applied/verified on demand without changing the build for contributors:
+                mvn license:format   (apply or update headers)
+                mvn license:check    (verify; used in CI if enforcement is desired)
+            -->
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>4.6</version>
+                <configuration>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>${maven.multiModuleProjectDirectory}/header.txt</header>
+                            <includes>
+                                <include>**/*.java</include>
+                            </includes>
+                        </licenseSet>
+                    </licenseSets>
+                    <mapping>
+                        <java>SLASHSTAR_STYLE</java>
+                    </mapping>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
