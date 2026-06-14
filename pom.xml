@@ -104,6 +104,22 @@
                     <artifactId>quarkus-config-doc-maven-plugin</artifactId>
                     <version>${quarkus.version}</version>
                 </plugin>
+                <!--
+                  Keep the published Javadoc clean. The only doclint "missing"
+                  warnings the build emits are the JDK's nag about the implicit
+                  default constructor on CDI-managed beans (resolvers, filters,
+                  build processors) that are never instantiated by hand. Adding
+                  empty constructors purely to carry a comment would be noise, so
+                  the "missing" group is dropped while the higher-signal checks
+                  (html, syntax, reference, accessibility) stay enforced.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <doclint>all,-missing</doclint>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>

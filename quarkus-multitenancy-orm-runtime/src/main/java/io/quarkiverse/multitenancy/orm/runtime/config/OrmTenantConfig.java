@@ -18,6 +18,9 @@ public interface OrmTenantConfig {
      */
     HeaderFilterConfig headerFilter();
 
+    /**
+     * Configuration for the ORM module's {@code X-Tenant} header filter.
+     */
     interface HeaderFilterConfig {
 
         /**
