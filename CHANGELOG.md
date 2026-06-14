@@ -9,6 +9,7 @@
 ### Changed
 
 - **Behaviour change:** tenant-id validation is enabled by default. An application whose tenant identifiers contain characters outside `[A-Za-z0-9_-]` or exceed 64 characters will now receive HTTP 401 where `0.1.0` accepted the request. Widen `quarkus.multi-tenant.http.tenant-id.pattern` / `quarkus.multi-tenant.http.tenant-id.max-length`, or set `quarkus.multi-tenant.http.tenant-id.validation-enabled=false`, to restore the previous behaviour.
+- **Behaviour change:** the default HTTP strategy chain is now `header,cookie` (was `header,jwt,cookie`). The `jwt` strategy is opt-in — applications that resolve tenants from a verified bearer token must set `quarkus.multi-tenant.http.strategy=header,jwt,cookie` (or `jwt`) explicitly. This completes the deprecation cycle begun in `0.1.0`, which logged a startup warning for applications relying on the implicit `jwt` default; that warning has been removed. (#15)
 
 ## 0.1.0
 

@@ -29,6 +29,8 @@ public class SignedJwtSecurityProfile implements QuarkusTestProfile {
     @Override
     public Map<String, String> getConfigOverrides() {
         return Map.of(
+                // jwt is opt-in since the default chain is header,cookie — enable it for these tests.
+                "quarkus.multi-tenant.http.strategy", "header,jwt,cookie",
                 "mp.jwt.verify.publickey.location", "test-public-key.pem",
                 "mp.jwt.verify.publickey.algorithm", "RS256",
                 "mp.jwt.verify.issuer", "https://multitenancy.test/issuer",

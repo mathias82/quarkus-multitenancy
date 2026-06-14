@@ -47,11 +47,13 @@ public interface HttpTenantConfig {
      * {@code path}.
      *
      * <p>
-     * The default omits {@code path} because path-based tenant
-     * resolution typically requires an application-specific URL prefix
-     * and is opt-in (see {@link #pathPattern()}).
+     * The default is {@code header,cookie}. The {@code jwt} strategy is
+     * opt-in — add it explicitly (for example {@code header,jwt,cookie}) —
+     * because it requires a configured token verification source. The
+     * {@code path} strategy is likewise opt-in, as it typically requires an
+     * application-specific URL prefix (see {@link #pathPattern()}).
      */
-    @WithDefault("header,jwt,cookie")
+    @WithDefault("header,cookie")
     List<String> strategy();
 
     /**
