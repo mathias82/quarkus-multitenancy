@@ -8,7 +8,7 @@ metadata:
     - "multi-tenant"
     - "tenant"
     - "hibernate-orm"
-  guide: "https://quarkiverse.github.io/quarkiverse-docs/quarkus-multitenancy/dev/"
+  guide: "https://docs.quarkiverse.io/quarkus-multitenancy/dev/"
   categories:
     - "data"
   status: "preview"
