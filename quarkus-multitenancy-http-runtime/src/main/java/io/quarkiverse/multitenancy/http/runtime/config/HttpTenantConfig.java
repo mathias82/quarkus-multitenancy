@@ -134,9 +134,10 @@ public interface HttpTenantConfig {
          * Whether a resolved tenant identifier is validated against
          * {@link #maxLength()} and {@link #pattern()}. When {@code true}
          * (the default), an identifier that violates the policy is rejected
-         * with HTTP 401 and never reaches the {@code TenantContext}, closing
-         * length- and injection-based abuse of downstream consumers such as
-         * logs, SQL parameters and ORM tenant lookups.
+         * with {@link #rejectStatus()} (HTTP 400 by default) and never reaches
+         * the {@code TenantContext}, closing length- and injection-based abuse
+         * of downstream consumers such as logs, SQL parameters and ORM tenant
+         * lookups.
          */
         @WithDefault("true")
         boolean validationEnabled();
@@ -157,5 +158,23 @@ public interface HttpTenantConfig {
          */
         @WithDefault("[A-Za-z0-9_-]+")
         String pattern();
+
+        /**
+         * HTTP status used to abort a request when a resolved tenant
+         * identifier fails the {@link #maxLength()} or {@link #pattern()}
+         * policy. Defaults to {@code 400} (Bad Request) because a malformed
+         * identifier is bad <em>request input</em>, not an authentication
+         * failure.
+         *
+         * <p>
+         * This is deliberately distinct from the {@code 401} returned for an
+         * authentication-related rejection ({@code TenantResolution.Rejected},
+         * for example an invalid or untrusted bearer token), which is not
+         * affected by this setting. Set it to {@code 401} to restore the
+         * behaviour from before this property existed. A client-error
+         * ({@code 4xx}) status is expected.
+         */
+        @WithDefault("400")
+        int rejectStatus();
     }
 }

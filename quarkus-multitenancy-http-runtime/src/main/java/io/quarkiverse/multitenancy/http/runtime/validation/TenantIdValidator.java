@@ -33,8 +33,10 @@ import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
  * The validator is the single hardening gate for every resolver: built-in and
  * custom {@code TenantResolver}s alike produce their {@code Resolved} outcome
  * through the HTTP filter, which consults this bean before accepting the
- * identifier. A violating identifier is rejected (HTTP 401) rather than allowed
- * to flow downstream into log lines, SQL parameters, or ORM tenant lookups.
+ * identifier. A violating identifier is rejected with the configured
+ * {@code quarkus.multi-tenant.http.tenant-id.reject-status} (HTTP 400 by
+ * default) rather than allowed to flow downstream into log lines, SQL
+ * parameters, or ORM tenant lookups.
  *
  * <p>
  * The configured {@link Pattern} is compiled once at construction time, so

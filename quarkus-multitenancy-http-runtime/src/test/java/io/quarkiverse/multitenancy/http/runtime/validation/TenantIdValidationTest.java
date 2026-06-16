@@ -28,8 +28,8 @@ import io.quarkus.test.junit.TestProfile;
 
 /**
  * End-to-end coverage for tenant-id hardening: a resolved identifier that
- * breaks the configured length or character-set policy is rejected with HTTP
- * 401 and never reaches the {@code TenantContext}.
+ * breaks the configured length or character-set policy is rejected with the
+ * default reject status (HTTP 400) and never reaches the {@code TenantContext}.
  *
  * <p>
  * The profile caps the length at 16 so the over-length case is easy to express;
@@ -68,7 +68,7 @@ class TenantIdValidationTest {
                 .when()
                 .get("/tenant")
                 .then()
-                .statusCode(401);
+                .statusCode(400);
     }
 
     @Test
@@ -78,7 +78,7 @@ class TenantIdValidationTest {
                 .when()
                 .get("/tenant")
                 .then()
-                .statusCode(401);
+                .statusCode(400);
     }
 
     /**

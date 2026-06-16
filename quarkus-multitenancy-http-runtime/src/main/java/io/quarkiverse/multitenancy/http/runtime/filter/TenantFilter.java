@@ -59,8 +59,11 @@ import io.quarkiverse.multitenancy.http.runtime.validation.TenantIdValidator;
  * <p>
  * Each invocation produces a {@link TenantResolution} outcome:
  * <ul>
- * <li>{@link TenantResolution.Resolved} — sets the tenant context and stops
- * the chain.</li>
+ * <li>{@link TenantResolution.Resolved} — validates the identifier against the
+ * tenant-id policy, then sets the tenant context and stops the chain. A
+ * syntactically invalid identifier aborts with the configured
+ * {@link HttpTenantConfig.TenantIdConfig#rejectStatus()} (HTTP 400 by
+ * default) — malformed request input, not an authentication failure.</li>
  * <li>{@link TenantResolution.NotApplicable} — the dispatcher tries the next
  * resolver/strategy.</li>
  * <li>{@link TenantResolution.Rejected} — aborts the request with 401. The
@@ -117,8 +120,9 @@ public class TenantFilter implements ContainerRequestFilter {
         if (outcome instanceof TenantResolution.Resolved resolved) {
             Optional<String> rejection = tenantIdValidator.validate(resolved.tenantId());
             if (rejection.isPresent()) {
-                logger.warnf("Rejecting resolved tenant id: %s", rejection.get());
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+                int rejectStatus = config.tenantId().rejectStatus();
+                logger.warnf("Rejecting resolved tenant id with status %d: %s", rejectStatus, rejection.get());
+                requestContext.abortWith(Response.status(rejectStatus).build());
                 return;
             }
             tenantContext.setTenantId(resolved.tenantId());

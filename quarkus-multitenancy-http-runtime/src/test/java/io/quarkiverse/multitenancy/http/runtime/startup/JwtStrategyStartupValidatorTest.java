@@ -226,6 +226,11 @@ class JwtStrategyStartupValidatorTest {
                     public String pattern() {
                         return "[A-Za-z0-9_-]+";
                     }
+
+                    @Override
+                    public int rejectStatus() {
+                        return 400;
+                    }
                 };
             }
         };
