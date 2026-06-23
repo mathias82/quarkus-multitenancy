@@ -16,7 +16,6 @@
 package io.quarkiverse.multitenancy.http.runtime.filter;
 
 import java.util.EnumSet;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -177,17 +176,16 @@ public class TenantFilter implements ContainerRequestFilter {
         if (configured == null || configured.isBlank()) {
             return null;
         }
-        // Normalise to lowercase so values like "Header" or "JWT" in
-        // quarkus.multi-tenant.http.strategy are accepted, matching the
-        // case-insensitive behaviour users get from other Quarkus config.
-        String normalized = configured.trim().toLowerCase(Locale.ROOT);
-        try {
-            return HttpTenantStrategy.valueOf(normalized);
-        } catch (IllegalArgumentException e) {
-            logger.warnf("Unknown tenant strategy '%s' in quarkus.multi-tenant.http.strategy "
+        Optional<HttpTenantStrategy> strategy = HttpTenantStrategy.fromConfigValue(configured);
+        if (strategy.isEmpty()) {
+            // Unreachable in a normally booted app: StrategyStartupValidator
+            // fails fast on unknown names. Kept as defensive filter hygiene for
+            // config paths that bypass startup validation, hence DEBUG.
+            logger.debugf("Unknown tenant strategy '%s' in quarkus.multi-tenant.http.strategy "
                     + "(expected one of %s); skipping.", configured, BUILT_IN_NAMES);
             return null;
         }
+        return strategy.get();
     }
 
     private Optional<TenantResolver> findBuiltin(HttpTenantStrategy strategy) {
