@@ -171,8 +171,11 @@ public interface HttpTenantConfig {
          * authentication-related rejection ({@code TenantResolution.Rejected},
          * for example an invalid or untrusted bearer token), which is not
          * affected by this setting. Set it to {@code 401} to restore the
-         * behaviour from before this property existed. A client-error
-         * ({@code 4xx}) status is expected.
+         * behaviour from before this property existed.
+         *
+         * <p>
+         * Only a client-error ({@code 4xx}) status is supported: a value
+         * outside the {@code 400}-{@code 499} range fails fast at startup.
          */
         @WithDefault("400")
         int rejectStatus();
