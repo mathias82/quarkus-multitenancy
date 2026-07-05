@@ -301,7 +301,7 @@ Main options include:
 
 | `quarkus.multi-tenant.http.tenant-id.reject-status`
 | `400`
-| HTTP status used when a resolved tenant id fails the length or pattern policy. Defaults to `400` (malformed request input). Does not affect the `401` returned for an authentication-related rejection. Set to `401` to restore the previous behaviour.
+| HTTP status used when a resolved tenant id fails the length or pattern policy. Defaults to `400` (malformed request input). Does not affect the `401` returned for an authentication-related rejection. Set to `401` to restore the previous behaviour. Only `4xx` (`400`-`499`) values are supported; any other value fails fast at startup.
 |===
 
 == Tenant identifier validation
@@ -318,7 +318,7 @@ quarkus.multi-tenant.http.tenant-id.reject-status=400
 
 An identifier that exceeds `max-length` or does not match `pattern` in full is *rejected* with `reject-status` (HTTP `400` by default). It never reaches `TenantContext`, and the request does not fall back to `default-tenant`. This keeps untrusted input out of downstream consumers such as log lines, SQL parameters, and ORM tenant lookups.
 
-The default `400` reflects that a malformed tenant id is bad _request input_, which is distinct from an authentication failure: an untrusted or malformed bearer token still produces a `Rejected` outcome and returns `401` (see the JWT claim strategy), regardless of `reject-status`. A valid token whose tenant claim _value_ breaks the policy is a syntactic failure and is rejected with `reject-status`. Set `reject-status=401` to keep a single status for both.
+The default `400` reflects that a malformed tenant id is bad _request input_, which is distinct from an authentication failure: an untrusted or malformed bearer token still produces a `Rejected` outcome and returns `401` (see the JWT claim strategy), regardless of `reject-status`. A valid token whose tenant claim _value_ breaks the policy is a syntactic failure and is rejected with `reject-status`. Set `reject-status=401` to keep a single status for both. Only client-error (`4xx`) values are accepted: a `reject-status` outside the `400`-`499` range is a misconfiguration and fails fast at startup.
 
 When an identifier is rejected, only a sanitized, length-capped form is written to the log, with control characters (including CR/LF) replaced, to prevent log injection.
 
