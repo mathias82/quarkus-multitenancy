@@ -329,6 +329,8 @@ When an identifier is rejected, only a sanitized, length-capped form is written 
 Validation is enabled by default with a conservative pattern. If your tenant identifiers use a richer character set (for example dots, colons, or non-ASCII characters) or are longer than 64 characters, widen `pattern` and `max-length`, or set `validation-enabled=false` to turn the check off.
 ====
 
+The same policy is applied to `default-tenant` at startup: because the fallback tenant is published to `TenantContext` just like a resolved identifier, the application *fails to start* when `default-tenant` violates `max-length` or `pattern` (for example `default-tenant=my@tenant` against the default pattern, or an empty value). This surfaces the misconfiguration at boot instead of on the first unresolved request. Setting `validation-enabled=false` skips this startup check as well.
+
 == ORM configuration
 
 The ORM module integrates the resolved tenant with Quarkus Hibernate ORM multitenancy.
