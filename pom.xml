@@ -53,6 +53,7 @@
         <module>quarkus-multitenancy-orm-runtime</module>
         <module>quarkus-multitenancy-orm-deployment</module>
         <module>quarkus-multitenancy-demo</module>
+        <module>integration-tests</module>
         <module>docs</module>
     </modules>
 

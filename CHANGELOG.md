@@ -6,6 +6,7 @@
 
 - Tenant identifier hardening: a resolved tenant id is now validated against a configurable maximum length (`quarkus.multi-tenant.http.tenant-id.max-length`, default `64`) and a character-set pattern (`quarkus.multi-tenant.http.tenant-id.pattern`, default `[A-Za-z0-9_-]+`) before it is published to the `TenantContext`. A violating identifier is rejected and never reaches downstream consumers (logs, SQL parameters, ORM tenant lookups). Rejected identifiers are sanitised — control characters stripped and length-capped — before being logged, closing a log-injection vector. (#16)
 - Configurable reject status for tenant-id validation: `quarkus.multi-tenant.http.tenant-id.reject-status` (default `400`) sets the HTTP status used when a resolved tenant id fails the length or pattern policy. This is distinct from the `401` returned for an authentication-related rejection (`TenantResolution.Rejected`, e.g. an invalid bearer token), which is unaffected. Set it to `401` to keep a single status for both. (#29)
+- Native-mode integration tests: a new `integration-tests` module exercises the HTTP tenant resolution chain end to end (header resolution, verified-JWT resolution, tenant-id validation, default-tenant fallback and the rejected-resolution path). The assertions run in the JVM as a `@QuarkusTest` and, in CI, against the native binary as a `@QuarkusIntegrationTest`, so native-image regressions in tenant resolution are caught before release and JVM/native behaviour is asserted to be identical. (#40)
 
 ### Changed
 
