@@ -40,10 +40,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantIncomingInterceptor;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantOutgoingInterceptor;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantPropagationException;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantValidator;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.interceptor.KafkaTenantIncomingInterceptor;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.interceptor.KafkaTenantOutgoingInterceptor;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.exception.KafkaTenantPropagationException;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.validation.KafkaTenantValidator;
 import io.quarkus.test.QuarkusUnitTest;
 import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;

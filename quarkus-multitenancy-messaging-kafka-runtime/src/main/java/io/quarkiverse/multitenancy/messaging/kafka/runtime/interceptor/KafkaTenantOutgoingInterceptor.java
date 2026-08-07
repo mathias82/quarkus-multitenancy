@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.quarkiverse.multitenancy.messaging.kafka.runtime;
+package io.quarkiverse.multitenancy.messaging.kafka.runtime.interceptor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -30,6 +30,8 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.config.KafkaTenantConfig;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.exception.KafkaTenantPropagationException;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.validation.KafkaTenantValidator;
 import io.quarkus.arc.Arc;
 import io.smallrye.reactive.messaging.OutgoingInterceptor;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;

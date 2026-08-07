@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.quarkiverse.multitenancy.messaging.kafka.runtime;
+package io.quarkiverse.multitenancy.messaging.kafka.runtime.exception;
 
 /**
  * Signals that tenant metadata on a Kafka message cannot be propagated

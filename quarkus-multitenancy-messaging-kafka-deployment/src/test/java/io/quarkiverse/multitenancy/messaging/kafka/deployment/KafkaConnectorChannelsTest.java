@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaConnectorChannels;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.channel.KafkaConnectorChannels;
 import io.smallrye.config.SmallRyeConfigBuilder;
 
 class KafkaConnectorChannelsTest {

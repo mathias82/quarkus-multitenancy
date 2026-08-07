@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.quarkiverse.multitenancy.messaging.kafka.runtime;
+package io.quarkiverse.multitenancy.messaging.kafka.runtime.decorator;
 
 import java.util.List;
 
@@ -22,6 +22,9 @@ import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
 
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.channel.KafkaConnectorChannels;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.interceptor.KafkaTenantInterceptorBinding;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.interceptor.KafkaTenantOutgoingInterceptor;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.reactive.messaging.SubscriberDecorator;

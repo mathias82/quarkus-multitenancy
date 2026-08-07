@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantIdValidator;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.validation.KafkaTenantIdValidator;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.config.KafkaTenantConfig;
 import io.smallrye.config.PropertiesConfigSource;
 import io.smallrye.config.SmallRyeConfigBuilder;

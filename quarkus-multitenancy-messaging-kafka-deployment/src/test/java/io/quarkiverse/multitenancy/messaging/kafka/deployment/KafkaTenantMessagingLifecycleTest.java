@@ -48,8 +48,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaConnectorChannels;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantPropagationException;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.channel.KafkaConnectorChannels;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.exception.KafkaTenantPropagationException;
 import io.quarkus.test.QuarkusUnitTest;
 import io.smallrye.reactive.messaging.IncomingInterceptor;
 import io.smallrye.reactive.messaging.OutgoingInterceptor;

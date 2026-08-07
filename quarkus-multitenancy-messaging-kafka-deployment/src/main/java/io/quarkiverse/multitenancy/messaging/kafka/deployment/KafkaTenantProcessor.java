@@ -15,13 +15,13 @@
  */
 package io.quarkiverse.multitenancy.messaging.kafka.deployment;
 
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaConnectorChannels;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantIdValidator;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantIncomingDecorator;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantIncomingInterceptor;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantOutgoingDecorator;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantOutgoingInterceptor;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.channel.KafkaConnectorChannels;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.config.KafkaTenantConfig;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.decorator.KafkaTenantIncomingDecorator;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.decorator.KafkaTenantOutgoingDecorator;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.interceptor.KafkaTenantIncomingInterceptor;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.interceptor.KafkaTenantOutgoingInterceptor;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.validation.KafkaTenantIdValidator;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;

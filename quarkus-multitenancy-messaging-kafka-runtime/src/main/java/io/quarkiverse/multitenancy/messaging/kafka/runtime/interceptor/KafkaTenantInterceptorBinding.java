@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.quarkiverse.multitenancy.messaging.kafka.runtime;
+package io.quarkiverse.multitenancy.messaging.kafka.runtime.interceptor;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
@@ -30,5 +30,5 @@ import jakarta.inject.Qualifier;
 @Qualifier
 @Retention(RUNTIME)
 @Target({ TYPE, FIELD, PARAMETER, METHOD })
-@interface KafkaTenantInterceptorBinding {
+public @interface KafkaTenantInterceptorBinding {
 }
