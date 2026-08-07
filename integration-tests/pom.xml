@@ -30,6 +30,16 @@
             <artifactId>quarkus-multitenancy-http</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- Exercise the ORM adapter against real tenant-specific datasources. -->
+        <dependency>
+            <groupId>io.quarkiverse.multitenancy</groupId>
+            <artifactId>quarkus-multitenancy-orm</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-h2</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>
