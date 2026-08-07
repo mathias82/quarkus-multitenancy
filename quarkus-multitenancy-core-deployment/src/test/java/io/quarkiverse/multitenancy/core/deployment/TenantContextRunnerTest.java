@@ -27,17 +27,14 @@ import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContextRunner;
 import io.quarkus.arc.Arc;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.junit.QuarkusTest;
 
+@QuarkusTest
 class TenantContextRunnerTest {
-
-    @RegisterExtension
-    static final QuarkusUnitTest UNIT_TEST = new QuarkusUnitTest();
 
     @Inject
     TenantContext tenantContext;
