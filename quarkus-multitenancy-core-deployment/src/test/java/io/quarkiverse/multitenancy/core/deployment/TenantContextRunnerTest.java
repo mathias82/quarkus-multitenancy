@@ -30,7 +30,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContextRunner;
-import io.quarkus.arc.ActivateRequestContext;
+import jakarta.enterprise.context.control.ActivateRequestContext;
 import io.quarkus.arc.Arc;
 import io.quarkus.test.QuarkusUnitTest;
 
