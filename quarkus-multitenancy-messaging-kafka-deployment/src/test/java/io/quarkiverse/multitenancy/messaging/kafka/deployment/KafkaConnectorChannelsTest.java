@@ -59,4 +59,30 @@ class KafkaConnectorChannelsTest {
         assertTrue(channels.isIncomingKafka("orders.eu"));
         assertTrue(channels.isOutgoingKafka(List.of("events.eu")));
     }
+
+    @Test
+    void shouldResolveIndexedConcurrencyChannelNamesFromBaseChannelConfiguration() {
+        var config = new SmallRyeConfigBuilder()
+                .withDefaultValue("mp.messaging.incoming.orders.connector", "smallrye-kafka")
+                .withDefaultValue("mp.messaging.incoming.\"orders.eu\".connector", "smallrye-kafka")
+                .build();
+        KafkaConnectorChannels channels = new KafkaConnectorChannels(config);
+
+        assertTrue(channels.isIncomingKafka("orders$1"));
+        assertTrue(channels.isIncomingKafka(List.of("orders$1", "orders$2")));
+        assertTrue(channels.isIncomingKafka("orders.eu$1"));
+        assertFalse(channels.isOutgoingKafka(List.of("orders$1")));
+    }
+
+    @Test
+    void shouldRecognizeKafkaConnectorAlias() {
+        var config = new SmallRyeConfigBuilder()
+                .withDefaultValue("mp.messaging.incoming.kafka-in.connector", "kafka")
+                .withDefaultValue("mp.messaging.outgoing.kafka-out.connector", "kafka")
+                .build();
+        KafkaConnectorChannels channels = new KafkaConnectorChannels(config);
+
+        assertTrue(channels.isIncomingKafka("kafka-in"));
+        assertTrue(channels.isOutgoingKafka(List.of("kafka-out")));
+    }
 }

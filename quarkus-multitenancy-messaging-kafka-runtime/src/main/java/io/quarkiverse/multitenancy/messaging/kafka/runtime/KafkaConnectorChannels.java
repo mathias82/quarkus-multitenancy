@@ -34,6 +34,8 @@ import org.eclipse.microprofile.config.Config;
 public class KafkaConnectorChannels {
 
     private static final String KAFKA_CONNECTOR = "smallrye-kafka";
+    private static final String KAFKA_CONNECTOR_ALIAS = "kafka";
+    private static final char CONCURRENCY_SEPARATOR = '$';
     private static final String INCOMING_PREFIX = "mp.messaging.incoming.";
     private static final String OUTGOING_PREFIX = "mp.messaging.outgoing.";
 
@@ -45,7 +47,7 @@ public class KafkaConnectorChannels {
     }
 
     public boolean isIncomingKafka(String channelName) {
-        return isKafka(INCOMING_PREFIX, channelName);
+        return isKafka(INCOMING_PREFIX, baseConcurrencyChannelName(channelName));
     }
 
     public boolean isIncomingKafka(List<String> channelNames) {
@@ -63,8 +65,20 @@ public class KafkaConnectorChannels {
             return false;
         }
         return connector(directionPrefix, channelName)
-                .filter(KAFKA_CONNECTOR::equals)
+                .filter(KafkaConnectorChannels::isKafkaConnector)
                 .isPresent();
+    }
+
+    private static String baseConcurrencyChannelName(String channelName) {
+        if (channelName == null) {
+            return null;
+        }
+        int separator = channelName.indexOf(CONCURRENCY_SEPARATOR);
+        return separator < 0 ? channelName : channelName.substring(0, separator);
+    }
+
+    private static boolean isKafkaConnector(String connector) {
+        return KAFKA_CONNECTOR.equals(connector) || KAFKA_CONNECTOR_ALIAS.equals(connector);
     }
 
     private Optional<String> connector(String directionPrefix, String channelName) {
