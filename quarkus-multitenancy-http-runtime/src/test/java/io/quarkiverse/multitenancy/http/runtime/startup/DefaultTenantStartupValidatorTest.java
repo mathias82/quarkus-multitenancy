@@ -63,6 +63,17 @@ class DefaultTenantStartupValidatorTest {
     }
 
     @Test
+    void rejectsReservedDefaultTenantWhenValidationDisabled() {
+        DefaultTenantStartupValidator v = newValidator(
+                fakeConfig(true, "__bootstrap", false, DEFAULT_MAX_LENGTH, DEFAULT_PATTERN));
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> v.onStart(null));
+
+        assertTrue(thrown.getMessage().contains("reserved"));
+    }
+
+    @Test
     void failsWhenDefaultTenantViolatesPattern() {
         DefaultTenantStartupValidator v = newValidator(
                 fakeConfig(true, "my@tenant", true, DEFAULT_MAX_LENGTH, DEFAULT_PATTERN));

@@ -64,6 +64,49 @@ class MultiTenancyResolutionTest {
     }
 
     @Test
+    void rejectsBootstrapTenantFromHeader() {
+        given()
+                .header("X-Tenant", "__bootstrap")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void rejectsBootstrapTenantFromCookie() {
+        given()
+                .cookie("tenant_cookie", "__bootstrap")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void rejectsBootstrapTenantFromPath() {
+        when()
+                .get("/t/__bootstrap/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void rejectsBootstrapTenantFromVerifiedJwt() {
+        String token = Jwt.issuer(ISSUER)
+                .upn("alice")
+                .claim("tenant", "__bootstrap")
+                .sign();
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
     void fallsBackToDefaultTenantWhenNothingResolves() {
         // No header, bearer token or cookie: the chain exhausts without a match and the filter
         // applies the configured default tenant ("public", from HttpTenantConfig defaults).

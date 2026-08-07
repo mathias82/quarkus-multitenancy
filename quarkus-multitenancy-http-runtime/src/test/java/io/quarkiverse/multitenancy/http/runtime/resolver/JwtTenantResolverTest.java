@@ -54,6 +54,21 @@ class JwtTenantResolverTest {
     }
 
     @Test
+    void rejectsReservedTenantFromVerifiedJwt() {
+        String token = Jwt.issuer(ISSUER)
+                .upn("alice")
+                .claim("tenant", "__bootstrap")
+                .sign();
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
     void rejectsWithUnauthorizedWhenSignatureCannotBeVerified() {
         // Token signed with a wrong issuer fails SmallRye JWT verification.
         String token = Jwt.issuer("https://attacker.example/issuer")

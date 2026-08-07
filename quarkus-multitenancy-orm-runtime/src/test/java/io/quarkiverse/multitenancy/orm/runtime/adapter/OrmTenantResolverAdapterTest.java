@@ -64,4 +64,9 @@ class OrmTenantResolverAdapterTest {
                 OrmTenantResolverAdapter.BOOTSTRAP_TENANT,
                 tenant);
     }
+
+    @Test
+    void bootstrapTenantIsNotARootTenant() {
+        assertFalse(resolver.isRoot(OrmTenantResolverAdapter.BOOTSTRAP_TENANT));
+    }
 }

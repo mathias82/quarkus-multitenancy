@@ -70,6 +70,16 @@ class TenantFilterDispatchTest {
     }
 
     @Test
+    void rejectsReservedTenantFromCustomResolver() {
+        given()
+                .header("X-Custom-Tenant", "__bootstrap")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
     void notApplicableCustomLetsBuiltinsRun() {
         // No X-Custom-Tenant present → custom returns NotApplicable → built-in
         // header resolver fires.

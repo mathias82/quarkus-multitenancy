@@ -48,6 +48,14 @@ class PathTenantResolverTest {
                 .body(is("Optional[public]"));
     }
 
+    @Test
+    void rejectsReservedTenantFromPath() {
+        when()
+                .get("/t/__bootstrap/tenant")
+                .then()
+                .statusCode(400);
+    }
+
     public static class PathStrategyProfile implements QuarkusTestProfile {
         @Override
         public Map<String, String> getConfigOverrides() {

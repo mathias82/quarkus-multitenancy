@@ -66,4 +66,14 @@ class OrmTenantHeaderFilterEnabledTest {
                 .then()
                 .statusCode(400);
     }
+
+    @Test
+    void reservedHeader_returns400() {
+        given()
+                .header("X-Tenant", "__bootstrap")
+                .when()
+                .get("/echo")
+                .then()
+                .statusCode(400);
+    }
 }

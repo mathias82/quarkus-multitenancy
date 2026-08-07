@@ -15,30 +15,26 @@
  */
 package io.quarkiverse.multitenancy.core.runtime.context;
 
-import java.util.Optional;
+/**
+ * Tenant identifiers reserved for internal extension use.
+ */
+public final class ReservedTenantIds {
 
-import jakarta.enterprise.context.RequestScoped;
+    /**
+     * Internal tenant used while Hibernate ORM starts without a request tenant.
+     */
+    public static final String ORM_BOOTSTRAP = "__bootstrap";
 
-@RequestScoped
-public class DefaultTenantContext implements TenantContext {
-
-    private String tenantId;
-
-    @Override
-    public Optional<String> getTenantId() {
-        return Optional.ofNullable(tenantId);
+    private ReservedTenantIds() {
     }
 
-    @Override
-    public void setTenantId(String tenantId) {
-        if (ReservedTenantIds.isReserved(tenantId)) {
-            throw new IllegalArgumentException("Tenant id '" + tenantId + "' is reserved for internal use");
-        }
-        this.tenantId = tenantId;
-    }
-
-    @Override
-    public void clear() {
-        tenantId = null;
+    /**
+     * Checks whether an identifier is reserved for internal use.
+     *
+     * @param tenantId tenant identifier to check
+     * @return {@code true} when applications must not select the identifier
+     */
+    public static boolean isReserved(String tenantId) {
+        return ORM_BOOTSTRAP.equals(tenantId);
     }
 }

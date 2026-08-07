@@ -22,6 +22,7 @@ import java.util.regex.PatternSyntaxException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import io.quarkiverse.multitenancy.core.runtime.context.ReservedTenantIds;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
 
 /**
@@ -30,7 +31,7 @@ import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
  * {@code TenantContext}.
  *
  * <p>
- * The validator is the single hardening gate for every resolver: built-in and
+ * The validator is the HTTP hardening gate for every resolver: built-in and
  * custom {@code TenantResolver}s alike produce their {@code Resolved} outcome
  * through the HTTP filter, which consults this bean before accepting the
  * identifier. A violating identifier is rejected with the configured
@@ -76,10 +77,14 @@ public class TenantIdValidator {
      * @param tenantId the identifier produced by a resolver; must not be
      *        {@code null}
      * @return a log-safe rejection reason when the identifier violates the
-     *         policy, or {@link Optional#empty()} when it is acceptable (or
-     *         validation is disabled)
+     *         policy, or {@link Optional#empty()} when it is acceptable.
+     *         Reserved identifiers are checked even when configurable length
+     *         and pattern validation is disabled
      */
     public Optional<String> validate(String tenantId) {
+        if (ReservedTenantIds.isReserved(tenantId)) {
+            return Optional.of("is reserved for internal use");
+        }
         if (!enabled) {
             return Optional.empty();
         }
