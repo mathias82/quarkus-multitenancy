@@ -50,6 +50,8 @@
         <module>quarkus-multitenancy-core-deployment</module>
         <module>quarkus-multitenancy-http-runtime</module>
         <module>quarkus-multitenancy-http-deployment</module>
+        <module>quarkus-multitenancy-messaging-kafka-runtime</module>
+        <module>quarkus-multitenancy-messaging-kafka-deployment</module>
         <module>quarkus-multitenancy-orm-runtime</module>
         <module>quarkus-multitenancy-orm-deployment</module>
         <module>quarkus-multitenancy-demo</module>

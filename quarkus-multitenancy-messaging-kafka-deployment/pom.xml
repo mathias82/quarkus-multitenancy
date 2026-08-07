@@ -1,0 +1,44 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.quarkiverse.multitenancy</groupId>
+        <artifactId>quarkus-multitenancy-parent</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>quarkus-multitenancy-messaging-kafka-deployment</artifactId>
+    <name>Quarkus Multitenancy - Messaging Kafka - Deployment</name>
+    <description>Build-time integration for Kafka tenant propagation.</description>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>quarkus-multitenancy-messaging-kafka</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>quarkus-multitenancy-core-deployment</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc-deployment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-kafka-deployment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.reactive</groupId>
+            <artifactId>smallrye-reactive-messaging-in-memory</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
