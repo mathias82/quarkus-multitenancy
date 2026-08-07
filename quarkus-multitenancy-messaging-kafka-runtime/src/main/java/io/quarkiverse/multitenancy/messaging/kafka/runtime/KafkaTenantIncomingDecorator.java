@@ -24,29 +24,23 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.reactive.messaging.SubscriberDecorator;
+import io.smallrye.reactive.messaging.PublisherDecorator;
 
 /**
- * Captures the tenant on the producing thread before Quarkus clears connector
- * context propagation.
- * <p>
- * The regular outgoing interceptor still runs immediately before transmission,
- * but by then request-scoped state is intentionally unavailable on connector
- * channels. Decorating before Quarkus' connector context boundary ensures an
- * emitter invoked from an HTTP request can stamp the tenant while that request
- * context is still active.
+ * Applies incoming tenant propagation only to Kafka connector channels and
+ * isolates validation failures to the rejected message.
  */
 @ApplicationScoped
-public class KafkaTenantOutgoingDecorator implements SubscriberDecorator {
+public class KafkaTenantIncomingDecorator implements PublisherDecorator {
 
-    private static final int BEFORE_CONNECTOR_CONTEXT_CLEARING = -200;
+    private static final int AFTER_REQUEST_CONTEXT_ACTIVATION = 400;
 
     private final KafkaConnectorChannels channels;
-    private final KafkaTenantOutgoingInterceptor interceptor;
+    private final KafkaTenantIncomingInterceptor interceptor;
 
     @Inject
-    public KafkaTenantOutgoingDecorator(KafkaConnectorChannels channels,
-            @KafkaTenantInterceptorBinding KafkaTenantOutgoingInterceptor interceptor) {
+    public KafkaTenantIncomingDecorator(KafkaConnectorChannels channels,
+            @KafkaTenantInterceptorBinding KafkaTenantIncomingInterceptor interceptor) {
         this.channels = channels;
         this.interceptor = interceptor;
     }
@@ -54,7 +48,7 @@ public class KafkaTenantOutgoingDecorator implements SubscriberDecorator {
     @Override
     public Multi<? extends Message<?>> decorate(Multi<? extends Message<?>> publisher,
             List<String> channelNames, boolean isConnector) {
-        if (!isConnector || !channels.isOutgoingKafka(channelNames)) {
+        if (!isConnector || !channels.isIncomingKafka(channelNames)) {
             return publisher;
         }
         return publisher.onItem().transformToMultiAndConcatenate(this::interceptOrNack);
@@ -62,7 +56,7 @@ public class KafkaTenantOutgoingDecorator implements SubscriberDecorator {
 
     private Multi<? extends Message<?>> interceptOrNack(Message<?> message) {
         try {
-            return Multi.createFrom().item(interceptor.beforeMessageSend(message));
+            return Multi.createFrom().item(interceptor.afterMessageReceive(message));
         } catch (RuntimeException failure) {
             return Uni.createFrom()
                     .completionStage(() -> message.nack(failure))
@@ -72,6 +66,6 @@ public class KafkaTenantOutgoingDecorator implements SubscriberDecorator {
 
     @Override
     public int getPriority() {
-        return BEFORE_CONNECTOR_CONTEXT_CLEARING;
+        return AFTER_REQUEST_CONTEXT_ACTIVATION;
     }
 }

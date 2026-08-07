@@ -27,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.control.ActivateRequestContext;
+import jakarta.enterprise.inject.Any;
 import jakarta.inject.Inject;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -61,9 +62,11 @@ class KafkaTenantPropagationTest {
     TenantContext tenantContext;
 
     @Inject
+    @Any
     KafkaTenantOutgoingInterceptor outgoing;
 
     @Inject
+    @Any
     KafkaTenantIncomingInterceptor incoming;
 
     @AfterEach

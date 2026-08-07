@@ -45,6 +45,7 @@ import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
  * the request context at the end of the message lifecycle.
  */
 @ApplicationScoped
+@KafkaTenantInterceptorBinding
 public class KafkaTenantIncomingInterceptor implements IncomingInterceptor {
 
     private static final String REQUEST_SCOPE_PROPERTY = "quarkus.messaging.request-scoped.enabled=true";

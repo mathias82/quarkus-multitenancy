@@ -22,7 +22,10 @@ import java.util.regex.PatternSyntaxException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.eclipse.microprofile.config.Config;
+
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.config.KafkaTenantConfig;
+import io.smallrye.config.SmallRyeConfig;
 
 /**
  * Validates tenant identifiers crossing the Kafka trust boundary.
@@ -30,6 +33,8 @@ import io.quarkiverse.multitenancy.messaging.kafka.runtime.config.KafkaTenantCon
 @ApplicationScoped
 public class KafkaTenantIdValidator implements KafkaTenantValidator {
 
+    private static final String KAFKA_POLICY_PREFIX = "quarkus.multi-tenant.messaging.kafka.tenant-id.";
+    private static final String HTTP_POLICY_PREFIX = "quarkus.multi-tenant.http.tenant-id.";
     private static final int LOG_PREVIEW_MAX_LENGTH = 64;
     private static final char SANITIZED_CONTROL_CHAR = '�';
 
@@ -39,29 +44,40 @@ public class KafkaTenantIdValidator implements KafkaTenantValidator {
     private final Pattern pattern;
 
     @Inject
-    public KafkaTenantIdValidator(KafkaTenantConfig config) {
+    public KafkaTenantIdValidator(KafkaTenantConfig config, Config rawConfig) {
         if (config.headerName().isBlank()) {
             throw new IllegalStateException(
                     "quarkus.multi-tenant.messaging.kafka.header-name must not be blank");
         }
 
         KafkaTenantConfig.TenantIdConfig tenantId = config.tenantId();
-        if (tenantId.maxLength() < 1) {
+        this.enabled = policyValue(rawConfig, "validation-enabled", Boolean.class, tenantId.validationEnabled());
+        this.maxLength = policyValue(rawConfig, "max-length", Integer.class, tenantId.maxLength());
+        this.patternSource = policyValue(rawConfig, "pattern", String.class, tenantId.pattern());
+
+        if (maxLength < 1) {
             throw new IllegalStateException(
                     "quarkus.multi-tenant.messaging.kafka.tenant-id.max-length must be greater than zero");
         }
 
-        this.enabled = tenantId.validationEnabled();
-        this.maxLength = tenantId.maxLength();
-        this.patternSource = tenantId.pattern();
         try {
-            this.pattern = Pattern.compile(tenantId.pattern());
+            this.pattern = Pattern.compile(patternSource);
         } catch (PatternSyntaxException e) {
             throw new IllegalStateException(
                     "Invalid quarkus.multi-tenant.messaging.kafka.tenant-id.pattern: '"
-                            + tenantId.pattern() + "'",
+                            + patternSource + "'",
                     e);
         }
+    }
+
+    private static <T> T policyValue(Config config, String property, Class<T> type, T defaultValue) {
+        String kafkaProperty = KAFKA_POLICY_PREFIX + property;
+        SmallRyeConfig smallRyeConfig = config.unwrap(SmallRyeConfig.class);
+        if (!smallRyeConfig.getConfigValue(kafkaProperty).isDefault()) {
+            return config.getValue(kafkaProperty, type);
+        }
+        return config.getOptionalValue(HTTP_POLICY_PREFIX + property, type)
+                .orElse(defaultValue);
     }
 
     /**

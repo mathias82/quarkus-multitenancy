@@ -15,41 +15,71 @@
  */
 package io.quarkiverse.multitenancy.messaging.kafka.deployment;
 
+import static io.restassured.RestAssured.given;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.context.control.ActivateRequestContext;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.Any;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Message;
+import org.eclipse.microprofile.reactive.messaging.spi.Connector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaConnectorChannels;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantIncomingInterceptor;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantOutgoingInterceptor;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantPropagationException;
 import io.quarkus.test.QuarkusUnitTest;
 import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
+import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
+import io.smallrye.reactive.messaging.memory.InMemoryConnector;
+import io.smallrye.reactive.messaging.memory.InMemorySink;
 
 class StrictKafkaTenantPropagationTest {
 
+    private static final String OUTGOING_CHANNEL = "strict-tenant-out";
+
     @RegisterExtension
     static final QuarkusUnitTest UNIT_TEST = new QuarkusUnitTest()
+            .withApplicationRoot(jar -> jar.addClasses(SenderResource.class, AllChannelsKafka.class))
             .overrideConfigKey("quarkus.kafka.devservices.enabled", "false")
             .overrideConfigKey("quarkus.multi-tenant.messaging.kafka.fail-on-missing-incoming-tenant", "true")
-            .overrideConfigKey("quarkus.multi-tenant.messaging.kafka.fail-on-missing-outgoing-tenant", "true");
+            .overrideConfigKey("quarkus.multi-tenant.messaging.kafka.fail-on-missing-outgoing-tenant", "true")
+            .overrideConfigKey("mp.messaging.outgoing." + OUTGOING_CHANNEL + ".connector", "smallrye-in-memory");
 
     @Inject
     TenantContext tenantContext;
 
     @Inject
+    @Any
     KafkaTenantOutgoingInterceptor outgoing;
 
     @Inject
+    @Any
     KafkaTenantIncomingInterceptor incoming;
+
+    @Inject
+    @Connector("smallrye-in-memory")
+    InMemoryConnector connector;
 
     @Test
     @ActivateRequestContext
@@ -69,5 +99,62 @@ class StrictKafkaTenantPropagationTest {
 
         assertThrows(KafkaTenantPropagationException.class,
                 () -> outgoing.beforeMessageSend(Message.of("payload")));
+    }
+
+    @Test
+    void shouldFailOnlyTheStrictSendAndKeepOutgoingChannelAlive() {
+        given()
+                .when().get("/strict-send")
+                .then().statusCode(500);
+
+        given()
+                .queryParam("tenant", "acme-valid")
+                .when().get("/strict-send")
+                .then().statusCode(200);
+
+        InMemorySink<String> sink = connector.sink(OUTGOING_CHANNEL);
+        assertEquals(1, sink.received().size());
+        OutgoingKafkaRecordMetadata<?> metadata = sink.received().getFirst()
+                .getMetadata(OutgoingKafkaRecordMetadata.class)
+                .orElseThrow();
+        assertEquals("acme-valid", new String(metadata.getHeaders().lastHeader("X-Tenant").value(), UTF_8));
+    }
+
+    @Alternative
+    @Priority(1)
+    @Dependent
+    public static class AllChannelsKafka extends KafkaConnectorChannels {
+
+        @Inject
+        public AllChannelsKafka(Config config) {
+            super(config);
+        }
+
+        @Override
+        public boolean isIncomingKafka(String channelName) {
+            return true;
+        }
+
+        @Override
+        public boolean isOutgoingKafka(List<String> channelNames) {
+            return true;
+        }
+    }
+
+    @Path("/strict-send")
+    public static class SenderResource {
+
+        @Inject
+        TenantContext tenantContext;
+
+        @Inject
+        @Channel(OUTGOING_CHANNEL)
+        Emitter<String> emitter;
+
+        @GET
+        public CompletionStage<String> send(@QueryParam("tenant") String tenantId) {
+            tenantContext.setTenantId(tenantId);
+            return emitter.send("payload").thenApply(ignored -> "sent");
+        }
     }
 }

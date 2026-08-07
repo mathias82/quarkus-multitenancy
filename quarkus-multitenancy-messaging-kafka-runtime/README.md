@@ -2,7 +2,7 @@
 
 This optional extension module propagates `TenantContext` through Kafka record headers.
 
-It stamps the current tenant on outgoing messages, restores the tenant for incoming handlers, validates untrusted header values, and cleans up with the message acknowledgment lifecycle.
+It stamps the current tenant on outgoing Kafka messages, restores the tenant for incoming Kafka handlers, validates untrusted header values, and cleans up with the message acknowledgment lifecycle. Other Reactive Messaging connectors are left unchanged.
 
 ## Usage
 
@@ -21,4 +21,4 @@ quarkus.messaging.request-scoped.enabled=true
 quarkus.multi-tenant.messaging.kafka.header-name=X-Tenant
 ```
 
-See the project documentation for strict missing-tenant behavior and tenant-id validation options.
+Rejected tenant metadata nacks only the affected message; it does not terminate the channel. See the project documentation for strict missing-tenant behavior and tenant-id validation options.

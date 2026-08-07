@@ -157,6 +157,7 @@ public class TenantResource {
 
 The optional Kafka module copies the current `TenantContext` value to an outgoing Kafka record header and restores it for an incoming handler.
 It uses SmallRye Reactive Messaging interceptors and keeps the incoming request scope alive until the message is acknowledged or negatively acknowledged, including asynchronous handlers.
+Propagation is restricted to channels configured with the `smallrye-kafka` connector; other connectors and their application interceptors remain unchanged.
 
 Enable Quarkus Messaging request-scope lifecycle support at build time:
 
@@ -183,7 +184,11 @@ quarkus.multi-tenant.messaging.kafka.fail-on-missing-outgoing-tenant=true
 
 Incoming header values are decoded as strict UTF-8 and validated before they reach `TenantContext`.
 Blank, malformed, overlong, or pattern-mismatched identifiers are rejected.
+Rejection nacks and drops only the affected message, allowing the channel to continue processing subsequent records.
 Applications can add a CDI bean implementing `KafkaTenantValidator` for domain checks such as verifying the identifier against a tenant registry.
+
+When the HTTP module's tenant-id policy is configured, Kafka propagation inherits that policy by default.
+Any explicitly configured `quarkus.multi-tenant.messaging.kafka.tenant-id.*` value overrides the corresponding HTTP setting.
 
 Main Kafka options include:
 
@@ -208,15 +213,15 @@ Main Kafka options include:
 | Rejects an outgoing send when neither explicit metadata nor a current tenant is available.
 
 | `quarkus.multi-tenant.messaging.kafka.tenant-id.validation-enabled`
-| `true`
+| HTTP setting, or `true`
 | Validates tenant identifiers against the configured length and pattern.
 
 | `quarkus.multi-tenant.messaging.kafka.tenant-id.max-length`
-| `64`
+| HTTP setting, or `64`
 | Maximum accepted tenant identifier length.
 
 | `quarkus.multi-tenant.messaging.kafka.tenant-id.pattern`
-| `[A-Za-z0-9_-]+`
+| HTTP setting, or `[A-Za-z0-9_-]+`
 | Pattern that a tenant identifier must match in full.
 |===
 

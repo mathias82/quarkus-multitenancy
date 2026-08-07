@@ -42,6 +42,7 @@ import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
  * leaves it untouched.
  */
 @ApplicationScoped
+@KafkaTenantInterceptorBinding
 public class KafkaTenantOutgoingInterceptor implements OutgoingInterceptor {
 
     private final TenantContext tenantContext;

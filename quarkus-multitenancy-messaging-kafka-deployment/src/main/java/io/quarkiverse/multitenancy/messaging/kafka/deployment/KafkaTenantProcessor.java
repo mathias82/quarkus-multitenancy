@@ -15,7 +15,9 @@
  */
 package io.quarkiverse.multitenancy.messaging.kafka.deployment;
 
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaConnectorChannels;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantIdValidator;
+import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantIncomingDecorator;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantIncomingInterceptor;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantOutgoingDecorator;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.KafkaTenantOutgoingInterceptor;
@@ -43,7 +45,9 @@ public class KafkaTenantProcessor {
     @BuildStep
     void registerBeans(BuildProducer<AdditionalBeanBuildItem> beans) {
         beans.produce(AdditionalBeanBuildItem.builder()
+                .addBeanClass(KafkaConnectorChannels.class)
                 .addBeanClass(KafkaTenantIdValidator.class)
+                .addBeanClass(KafkaTenantIncomingDecorator.class)
                 .addBeanClass(KafkaTenantIncomingInterceptor.class)
                 .addBeanClass(KafkaTenantOutgoingDecorator.class)
                 .addBeanClass(KafkaTenantOutgoingInterceptor.class)
