@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
+import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContextRunner;
-import jakarta.enterprise.context.control.ActivateRequestContext;
 import io.quarkus.arc.Arc;
 import io.quarkus.test.QuarkusUnitTest;
 
