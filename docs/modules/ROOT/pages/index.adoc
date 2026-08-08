@@ -415,6 +415,27 @@ The same policy is applied to `default-tenant` at startup: because the fallback 
 
 The ORM module integrates the resolved tenant with Quarkus Hibernate ORM multitenancy.
 
+When `quarkus-multitenancy-http` and `quarkus-multitenancy-orm` are installed
+together, the HTTP tenant-resolution pipeline owns request resolution. The ORM
+header filter acts only as a fallback and does nothing when `TenantContext`
+already contains a tenant, so it cannot overwrite a tenant selected by the HTTP
+strategy chain.
+
+For ORM-only applications the fallback keeps the historical `X-Tenant`
+behavior by default and can be configured independently:
+
+[source,properties]
+----
+quarkus.multi-tenant.orm.header-filter.enabled=true
+quarkus.multi-tenant.orm.header-filter.header-name=X-Tenant
+quarkus.multi-tenant.orm.tenant-id.validation-enabled=true
+quarkus.multi-tenant.orm.tenant-id.max-length=64
+quarkus.multi-tenant.orm.tenant-id.pattern=[A-Za-z0-9_-]+
+----
+
+The ORM-only fallback uses the same core validation implementation as HTTP
+resolution, including reserved-id rejection and sanitized logging.
+
 For database-based multitenancy, enable Hibernate ORM multitenancy and define one datasource per tenant:
 
 [source,properties]

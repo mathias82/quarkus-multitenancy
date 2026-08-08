@@ -48,6 +48,18 @@ class MultiTenancyResolutionTest {
     }
 
     @Test
+    void httpResolutionCannotBeOverwrittenByOrmFallback() {
+        given()
+                .header("X-Tenant", "http-tenant")
+                .header("X-Orm-Tenant", "orm-tenant")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(200)
+                .body(is("http-tenant"));
+    }
+
+    @Test
     void resolvesTenantFromVerifiedJwt() {
         String token = Jwt.issuer(ISSUER)
                 .upn("alice")

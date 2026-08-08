@@ -34,6 +34,11 @@ public interface OrmTenantConfig {
     HeaderFilterConfig headerFilter();
 
     /**
+     * Tenant-id validation used by the ORM-only header fallback.
+     */
+    TenantIdConfig tenantId();
+
+    /**
      * Configuration for the ORM module's {@code X-Tenant} header filter.
      */
     interface HeaderFilterConfig {
@@ -60,5 +65,38 @@ public interface OrmTenantConfig {
          */
         @WithDefault("true")
         boolean enabled();
+
+        /**
+         * Name of the HTTP header read by the ORM-only tenant fallback.
+         *
+         * <p>
+         * The fallback is skipped when {@code TenantContext} has already been
+         * populated by an earlier tenant-resolution path.
+         */
+        @WithDefault("X-Tenant")
+        String headerName();
+    }
+
+    interface TenantIdConfig {
+        /**
+         * Whether ORM-only resolved tenant identifiers are validated against
+         * the configured maximum length and pattern.
+         */
+        @WithDefault("true")
+        boolean validationEnabled();
+
+        /**
+         * Maximum number of characters allowed in an ORM-only resolved tenant
+         * identifier.
+         */
+        @WithDefault("64")
+        int maxLength();
+
+        /**
+         * Regular expression an ORM-only resolved tenant identifier must match
+         * in full before it is published to {@code TenantContext}.
+         */
+        @WithDefault("[A-Za-z0-9_-]+")
+        String pattern();
     }
 }
