@@ -18,6 +18,7 @@ package io.quarkiverse.multitenancy.core.runtime.context;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,14 +28,21 @@ import io.quarkus.arc.Arc;
 import io.quarkus.arc.ManagedContext;
 
 /**
- * Runs work with a tenant temporarily bound to the current thread.
+ * Runs synchronous work with a tenant temporarily bound to the current thread.
  * <p>
  * If the CDI request context is not active, this runner activates it for the
  * duration of the work. An existing tenant binding is always restored, which
  * makes nested and sequential invocations safe.
+ * <p>
+ * This runner deliberately does not propagate the tenant across asynchronous
+ * boundaries. Returning a {@link CompletionStage} or a Mutiny {@code Uni}
+ * from the supplier is rejected so that accidental asynchronous use fails
+ * immediately instead of running after the tenant context has been restored.
  */
 @ApplicationScoped
 public class TenantContextRunner {
+
+    private static final String MUTINY_UNI_CLASS_NAME = "io.smallrye.mutiny.Uni";
 
     private final TenantContext tenantContext;
 
@@ -44,7 +52,7 @@ public class TenantContextRunner {
     }
 
     /**
-     * Runs work with the supplied tenant bound.
+     * Runs synchronous work with the supplied tenant bound.
      *
      * @param tenantId tenant to bind; must not be {@code null}
      * @param work work to run; must not be {@code null}
@@ -58,12 +66,15 @@ public class TenantContextRunner {
     }
 
     /**
-     * Runs work with the supplied tenant bound and returns its result.
+     * Runs synchronous work with the supplied tenant bound and returns its result.
+     * Asynchronous return values such as {@link CompletionStage} and Mutiny
+     * {@code Uni} are not supported and are rejected immediately.
      *
      * @param tenantId tenant to bind; must not be {@code null}
      * @param work work to run; must not be {@code null}
      * @param <T> result type
      * @return the result returned by the work
+     * @throws IllegalStateException when the supplier returns an asynchronous result
      */
     public <T> T runAsTenant(String tenantId, Supplier<T> work) {
         requireNonNull(tenantId, "tenantId");
@@ -79,7 +90,9 @@ public class TenantContextRunner {
             Optional<String> previousTenant = tenantContext.getTenantId();
             tenantContext.setTenantId(tenantId);
             try {
-                return work.get();
+                T result = work.get();
+                rejectAsyncResult(result);
+                return result;
             } finally {
                 previousTenant.ifPresentOrElse(tenantContext::setTenantId, tenantContext::clear);
             }
@@ -87,6 +100,25 @@ public class TenantContextRunner {
             if (activated) {
                 requestContext.terminate();
             }
+        }
+    }
+
+    private static void rejectAsyncResult(Object result) {
+        if (result == null) {
+            return;
+        }
+        if (result instanceof CompletionStage<?> || isMutinyUni(result)) {
+            throw new IllegalStateException(
+                    "TenantContextRunner only supports synchronous work; do not return Uni or CompletionStage values");
+        }
+    }
+
+    private static boolean isMutinyUni(Object result) {
+        try {
+            Class<?> uniType = Class.forName(MUTINY_UNI_CLASS_NAME, false, result.getClass().getClassLoader());
+            return uniType.isInstance(result);
+        } catch (ClassNotFoundException ignored) {
+            return false;
         }
     }
 }
