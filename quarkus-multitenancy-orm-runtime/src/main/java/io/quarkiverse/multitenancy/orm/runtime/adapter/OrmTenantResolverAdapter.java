@@ -54,8 +54,14 @@ public class OrmTenantResolverAdapter implements io.quarkus.hibernate.orm.runtim
             return BOOTSTRAP_TENANT;
         }
 
-        return tenantContext.get()
+        String tenantId = tenantContext.get()
                 .getTenantId()
                 .orElseThrow(() -> new IllegalStateException("Tenant not set before ORM access"));
+
+        if (ReservedTenantIds.isReserved(tenantId)) {
+            throw new IllegalStateException("Reserved tenant id cannot be used for ORM access: " + tenantId);
+        }
+
+        return tenantId;
     }
 }
