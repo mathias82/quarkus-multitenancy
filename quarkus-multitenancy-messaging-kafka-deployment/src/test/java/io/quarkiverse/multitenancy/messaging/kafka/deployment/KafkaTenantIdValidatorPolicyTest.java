@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkiverse.multitenancy.core.runtime.context.ReservedTenantIds;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.config.KafkaTenantConfig;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.validation.KafkaTenantIdValidator;
 import io.smallrye.config.PropertiesConfigSource;
@@ -53,6 +54,35 @@ class KafkaTenantIdValidatorPolicyTest {
                 rawConfig.getConfigMapping(KafkaTenantConfig.class), rawConfig);
 
         assertTrue(validator.validate("tenant with spaces").isEmpty());
+    }
+
+    @Test
+    void shouldRejectReservedTenantId() {
+        var rawConfig = new SmallRyeConfigBuilder()
+                .withMapping(KafkaTenantConfig.class)
+                .build();
+        KafkaTenantIdValidator validator = new KafkaTenantIdValidator(
+                rawConfig.getConfigMapping(KafkaTenantConfig.class), rawConfig);
+
+        var rejection = validator.validate(ReservedTenantIds.ORM_BOOTSTRAP);
+
+        assertTrue(rejection.isPresent());
+        assertTrue(rejection.orElseThrow().contains("reserved"));
+    }
+
+    @Test
+    void shouldRejectReservedTenantIdWhenValidationIsDisabled() {
+        var rawConfig = new SmallRyeConfigBuilder()
+                .withMapping(KafkaTenantConfig.class)
+                .withDefaultValue("quarkus.multi-tenant.messaging.kafka.tenant-id.validation-enabled", "false")
+                .build();
+        KafkaTenantIdValidator validator = new KafkaTenantIdValidator(
+                rawConfig.getConfigMapping(KafkaTenantConfig.class), rawConfig);
+
+        var rejection = validator.validate(ReservedTenantIds.ORM_BOOTSTRAP);
+
+        assertTrue(rejection.isPresent());
+        assertTrue(rejection.orElseThrow().contains("reserved"));
     }
 
     @Test
