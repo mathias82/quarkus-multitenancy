@@ -24,6 +24,7 @@ import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.Config;
 
+import io.quarkiverse.multitenancy.core.runtime.context.ReservedTenantIds;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.config.KafkaTenantConfig;
 import io.smallrye.config.SmallRyeConfig;
 
@@ -82,16 +83,19 @@ public class KafkaTenantIdValidator implements KafkaTenantValidator {
 
     /**
      * Checks a non-null tenant identifier against the configured policy.
-     * Blank identifiers are always rejected, including when optional pattern
-     * validation is disabled.
+     * Blank and reserved identifiers are always rejected, including when optional
+     * pattern validation is disabled.
      *
-     * @param tenantId tenant identifier read from or written to Kafka
+     * @param tenantId tenant identifier read from Kafka
      * @return a log-safe rejection reason, or empty when accepted
      */
     @Override
     public Optional<String> validate(String tenantId) {
         if (tenantId.isBlank()) {
             return Optional.of("is blank");
+        }
+        if (ReservedTenantIds.isReserved(tenantId)) {
+            return Optional.of("is reserved for internal use");
         }
         if (!enabled) {
             return Optional.empty();
