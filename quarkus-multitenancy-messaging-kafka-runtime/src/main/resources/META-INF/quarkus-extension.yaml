@@ -1,0 +1,15 @@
+---
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+name: "Multitenancy - Messaging Kafka"
+description: "Propagates the current tenant through Kafka message headers."
+metadata:
+  keywords:
+    - "multitenancy"
+    - "multi-tenant"
+    - "tenant"
+    - "messaging"
+    - "kafka"
+  guide: "https://docs.quarkiverse.io/quarkus-multitenancy/dev/"
+  categories:
+    - "messaging"
+  status: "preview"

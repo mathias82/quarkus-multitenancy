@@ -7,8 +7,7 @@
 ![Quarkus](https://img.shields.io/badge/Quarkus-3.x-red)
 ![Status](https://img.shields.io/badge/status-preview-orange)
 
-> A modular, decoupled multitenancy extension for Quarkus  
-> supporting HTTP tenant resolution, ORM integration, and future integrations.
+> A modular, decoupled multitenancy extension for Quarkus supporting HTTP tenant resolution, Kafka propagation, ORM integration, and future integrations.
 
 Quarkus Multitenancy is a Quarkiverse extension that provides a generic tenant resolution API and reusable building blocks for Quarkus applications.
 
@@ -52,6 +51,8 @@ This makes the extension modular, lightweight, and framework-friendly, so you ca
 | ⚙️ **Core Deployment** | Build-time Quarkus integration for core | [Read more →](quarkus-multitenancy-core-deployment/README.md) |
 | 🌐 **HTTP Runtime** | Resolves tenants from header, cookie, JWT claim, or path | [Read more →](quarkus-multitenancy-http-runtime/README.md) |
 | 🧩 **HTTP Deployment** | Registers HTTP tenant resolution support | [Read more →](quarkus-multitenancy-http-deployment/README.md) |
+| 📨 **Kafka Messaging Runtime** | Propagates tenant identifiers through Kafka record headers | [Read more →](quarkus-multitenancy-messaging-kafka-runtime/README.md) |
+| ⚙️ **Kafka Messaging Deployment** | Registers the optional Kafka messaging integration | [Read more →](quarkus-multitenancy-messaging-kafka-deployment/README.md) |
 | 🧱 **ORM Runtime** | Integrates tenant context with Hibernate ORM multitenancy use cases | [Read more →](quarkus-multitenancy-orm-runtime/README.md) |
 | ⚙️ **ORM Deployment** | Quarkus feature registration for ORM integration | [Read more →](quarkus-multitenancy-orm-deployment/README.md) |
 | 🧪 **Demo App** | PostgreSQL multi-tenant REST demo | [Read more →](quarkus-multitenancy-demo/README.md) |
@@ -115,6 +116,16 @@ To enable ORM integration:
 <dependency>
     <groupId>io.quarkiverse.multitenancy</groupId>
     <artifactId>quarkus-multitenancy-orm</artifactId>
+    <version>${quarkus-multitenancy.version}</version>
+</dependency>
+```
+
+To propagate tenants through Kafka messages:
+
+```xml
+<dependency>
+    <groupId>io.quarkiverse.multitenancy</groupId>
+    <artifactId>quarkus-multitenancy-messaging-kafka</artifactId>
     <version>${quarkus-multitenancy.version}</version>
 </dependency>
 ```

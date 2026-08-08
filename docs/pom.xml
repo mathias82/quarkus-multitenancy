@@ -27,6 +27,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>quarkus-multitenancy-messaging-kafka-deployment</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>quarkus-multitenancy-orm-deployment</artifactId>
             <version>${project.version}</version>
         </dependency>
