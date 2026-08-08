@@ -11,7 +11,6 @@ The extension is designed around a small set of abstractions:
 * `TenantResolver` for resolving tenant identifiers from different sources.
 * `TenantContext` for exposing the resolved tenant during request processing.
 * HTTP tenant resolution strategies such as header, cookie, JWT claim, and path-based resolution.
-* Optional Kafka header propagation across Reactive Messaging boundaries.
 * ORM integration for tenant-aware persistence use cases.
 
 == Status
@@ -68,17 +67,6 @@ For ORM integration:
 <dependency>
     <groupId>io.quarkiverse.multitenancy</groupId>
     <artifactId>quarkus-multitenancy-orm</artifactId>
-    <version>${quarkus-multitenancy.version}</version>
-</dependency>
-----
-
-For Kafka messaging propagation:
-
-[source,xml]
-----
-<dependency>
-    <groupId>io.quarkiverse.multitenancy</groupId>
-    <artifactId>quarkus-multitenancy-messaging-kafka</artifactId>
     <version>${quarkus-multitenancy.version}</version>
 </dependency>
 ----
@@ -153,77 +141,35 @@ public class TenantResource {
 }
 ----
 
-== Kafka messaging propagation
+== Running tenant-scoped background work
 
-The optional Kafka module copies the current `TenantContext` value to an outgoing Kafka record header and restores it for an incoming handler.
-It uses SmallRye Reactive Messaging interceptors and keeps the incoming request scope alive until the message is acknowledged or negatively acknowledged, including asynchronous handlers.
-Propagation is restricted to channels configured with the `smallrye-kafka` connector; other connectors and their application interceptors remain unchanged.
+Inject `TenantContextRunner` when scheduled jobs, startup observers, or other
+background code needs to run with a tenant temporarily bound:
 
-Enable Quarkus Messaging request-scope lifecycle support at build time:
-
-[source,properties]
+[source,java]
 ----
-quarkus.messaging.request-scoped.enabled=true
-----
+import jakarta.inject.Inject;
 
-The module defaults to the `X-Tenant` Kafka header. To choose another header:
+import io.quarkiverse.multitenancy.core.runtime.context.TenantContextRunner;
+import io.quarkus.scheduler.Scheduled;
 
-[source,properties]
-----
-quarkus.multi-tenant.messaging.kafka.header-name=tenant-key
-----
+public class TenantJob {
 
-Explicit outgoing Kafka metadata takes precedence over the tenant in `TenantContext`.
-When no tenant is available, messages continue without a tenant header by default. Strict applications can reject missing tenants in either direction:
+    @Inject
+    TenantContextRunner tenantRunner;
 
-[source,properties]
-----
-quarkus.multi-tenant.messaging.kafka.fail-on-missing-incoming-tenant=true
-quarkus.multi-tenant.messaging.kafka.fail-on-missing-outgoing-tenant=true
+    @Scheduled(every = "1h")
+    void refreshTenantData() {
+        tenantRunner.runAsTenant("acme", () -> refreshData());
+    }
+}
 ----
 
-Incoming header values are decoded as strict UTF-8 and validated before they reach `TenantContext`.
-Blank, malformed, overlong, or pattern-mismatched identifiers are rejected.
-Rejection nacks and drops only the affected message, allowing the channel to continue processing subsequent records.
-Applications can add a CDI bean implementing `KafkaTenantValidator` for domain checks such as verifying the identifier against a tenant registry.
-
-When the HTTP module's tenant-id policy is configured, Kafka propagation inherits that policy by default.
-Any explicitly configured `quarkus.multi-tenant.messaging.kafka.tenant-id.*` value overrides the corresponding HTTP setting.
-
-Main Kafka options include:
-
-[cols="1,1,3", options="header"]
-|===
-| Property | Default | Description
-
-| `quarkus.multi-tenant.messaging.kafka.enabled`
-| `true`
-| Enables or disables Kafka tenant propagation when the optional module is installed.
-
-| `quarkus.multi-tenant.messaging.kafka.header-name`
-| `X-Tenant`
-| Kafka record header used to carry the tenant identifier.
-
-| `quarkus.multi-tenant.messaging.kafka.fail-on-missing-incoming-tenant`
-| `false`
-| Rejects an incoming message that has no tenant header. When disabled, the handler runs with an empty `TenantContext`.
-
-| `quarkus.multi-tenant.messaging.kafka.fail-on-missing-outgoing-tenant`
-| `false`
-| Rejects an outgoing send when neither explicit metadata nor a current tenant is available.
-
-| `quarkus.multi-tenant.messaging.kafka.tenant-id.validation-enabled`
-| HTTP setting, or `true`
-| Validates tenant identifiers against the configured length and pattern.
-
-| `quarkus.multi-tenant.messaging.kafka.tenant-id.max-length`
-| HTTP setting, or `64`
-| Maximum accepted tenant identifier length.
-
-| `quarkus.multi-tenant.messaging.kafka.tenant-id.pattern`
-| HTTP setting, or `[A-Za-z0-9_-]+`
-| Pattern that a tenant identifier must match in full.
-|===
+`runAsTenant` accepts either a `Runnable` or a `Supplier<T>`. It uses the
+existing CDI request context when one is active and creates one only when
+necessary. The previous tenant is restored after the callback completes,
+including when the callback throws, so nested and sequential calls do not leak
+tenant state.
 
 == Resolution strategies
 
@@ -452,6 +398,8 @@ quarkus.multi-tenant.http.tenant-id.reject-status=400
 
 An identifier that exceeds `max-length` or does not match `pattern` in full is *rejected* with `reject-status` (HTTP `400` by default). It never reaches `TenantContext`, and the request does not fall back to `default-tenant`. This keeps untrusted input out of downstream consumers such as log lines, SQL parameters, and ORM tenant lookups.
 
+The identifier `__bootstrap` is reserved for internal Hibernate ORM startup. It is always rejected when supplied by a header, cookie, path, JWT claim, custom resolver, or `default-tenant`, even when configurable tenant-id validation is disabled.
+
 The default `400` reflects that a malformed tenant id is bad _request input_, which is distinct from an authentication failure: an untrusted or malformed bearer token still produces a `Rejected` outcome and returns `401` (see the JWT claim strategy), regardless of `reject-status`. A valid token whose tenant claim _value_ breaks the policy is a syntactic failure and is rejected with `reject-status`. Set `reject-status=401` to keep a single status for both. Only client-error (`4xx`) values are accepted: a `reject-status` outside the `400`-`499` range is a misconfiguration and fails fast at startup.
 
 When an identifier is rejected, only a sanitized, length-capped form is written to the log, with control characters (including CR/LF) replaced, to prevent log injection.
@@ -491,7 +439,7 @@ quarkus.datasource.tenant2.password=pass2
 
 The ORM adapter uses the tenant id stored in `TenantContext` to resolve the current Hibernate ORM tenant.
 
-The special `__bootstrap` tenant is used as the default/bootstrap tenant before a request tenant is available.
+The special `__bootstrap` tenant is used only as the internal default during Hibernate ORM startup, before a request tenant is available. It is not a Hibernate root tenant and cannot be selected through `TenantContext` or an external resolver.
 
 == FAQ
 
