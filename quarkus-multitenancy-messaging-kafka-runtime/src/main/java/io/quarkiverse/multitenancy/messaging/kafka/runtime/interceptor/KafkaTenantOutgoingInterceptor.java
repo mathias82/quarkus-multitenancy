@@ -20,7 +20,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.apache.kafka.common.header.Headers;
@@ -31,7 +30,6 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.config.KafkaTenantConfig;
 import io.quarkiverse.multitenancy.messaging.kafka.runtime.exception.KafkaTenantPropagationException;
-import io.quarkiverse.multitenancy.messaging.kafka.runtime.validation.KafkaTenantValidator;
 import io.quarkus.arc.Arc;
 import io.smallrye.reactive.messaging.OutgoingInterceptor;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
@@ -42,6 +40,11 @@ import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
  * Explicit {@link OutgoingKafkaRecordMetadata} supplied by the application has
  * precedence: if it already contains the configured header, the interceptor
  * leaves it untouched.
+ * <p>
+ * Tenant-id policy validation is intentionally applied only on the incoming
+ * trust boundary. The ambient {@link TenantContext} is local application state,
+ * so outgoing propagation does not reject identifiers merely because they do
+ * not match the policy used for untrusted Kafka headers.
  */
 @ApplicationScoped
 @KafkaTenantInterceptorBinding
@@ -49,14 +52,11 @@ public class KafkaTenantOutgoingInterceptor implements OutgoingInterceptor {
 
     private final TenantContext tenantContext;
     private final KafkaTenantConfig config;
-    private final Instance<KafkaTenantValidator> validators;
 
     @Inject
-    public KafkaTenantOutgoingInterceptor(TenantContext tenantContext, KafkaTenantConfig config,
-            Instance<KafkaTenantValidator> validators) {
+    public KafkaTenantOutgoingInterceptor(TenantContext tenantContext, KafkaTenantConfig config) {
         this.tenantContext = tenantContext;
         this.config = config;
-        this.validators = validators;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class KafkaTenantOutgoingInterceptor implements OutgoingInterceptor {
             return message;
         }
 
-        Optional<String> tenant = currentTenant();
+        Optional<String> tenant = currentTenant().filter(value -> !value.isBlank());
         if (tenant.isEmpty()) {
             if (config.failOnMissingOutgoingTenant()) {
                 throw new KafkaTenantPropagationException(
@@ -83,8 +83,6 @@ public class KafkaTenantOutgoingInterceptor implements OutgoingInterceptor {
         }
 
         String tenantId = tenant.orElseThrow();
-        validateTenant(tenantId);
-
         Headers headers = copyHeaders(existing);
         headers.add(new RecordHeader(config.headerName(), tenantId.getBytes(UTF_8)));
         OutgoingKafkaRecordMetadata<?> metadata;
@@ -101,14 +99,6 @@ public class KafkaTenantOutgoingInterceptor implements OutgoingInterceptor {
             return Optional.empty();
         }
         return tenantContext.getTenantId();
-    }
-
-    private void validateTenant(String tenantId) {
-        for (KafkaTenantValidator validator : validators) {
-            validator.validate(tenantId).ifPresent(reason -> {
-                throw new KafkaTenantPropagationException("Cannot propagate tenant id: " + reason);
-            });
-        }
     }
 
     private static Optional<OutgoingKafkaRecordMetadata<?>> kafkaMetadata(Message<?> message) {
