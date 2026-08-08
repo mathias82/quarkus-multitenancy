@@ -141,6 +141,36 @@ public class TenantResource {
 }
 ----
 
+== Running tenant-scoped background work
+
+Inject `TenantContextRunner` when scheduled jobs, startup observers, or other
+background code needs to run with a tenant temporarily bound:
+
+[source,java]
+----
+import jakarta.inject.Inject;
+
+import io.quarkiverse.multitenancy.core.runtime.context.TenantContextRunner;
+import io.quarkus.scheduler.Scheduled;
+
+public class TenantJob {
+
+    @Inject
+    TenantContextRunner tenantRunner;
+
+    @Scheduled(every = "1h")
+    void refreshTenantData() {
+        tenantRunner.runAsTenant("acme", () -> refreshData());
+    }
+}
+----
+
+`runAsTenant` accepts either a `Runnable` or a `Supplier<T>`. It uses the
+existing CDI request context when one is active and creates one only when
+necessary. The previous tenant is restored after the callback completes,
+including when the callback throws, so nested and sequential calls do not leak
+tenant state.
+
 == Resolution strategies
 
 === Header

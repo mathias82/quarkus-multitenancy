@@ -15,19 +15,14 @@
  */
 package io.quarkiverse.multitenancy.core.deployment;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.junit.QuarkusTest;
 
+@QuarkusTest
 class MultiTenantProcessorTest {
-
-    @RegisterExtension
-    static final QuarkusUnitTest UNIT_TEST = new QuarkusUnitTest()
-            .withApplicationRoot(jar -> jar
-                    .addClasses(MultiTenantProcessor.class));
 
     @Test
     void extensionShouldBoot() {
