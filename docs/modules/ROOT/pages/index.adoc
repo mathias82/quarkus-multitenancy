@@ -171,6 +171,114 @@ necessary. The previous tenant is restored after the callback completes,
 including when the callback throws, so nested and sequential calls do not leak
 tenant state.
 
+`TenantContextRunner` is synchronous only. Returning a `CompletionStage` or a
+Mutiny `Uni` from the callback is rejected immediately, because the callback
+would return before the asynchronous work runs and the tenant would already
+have been restored. For asynchronous work, rely on the propagation contract
+below instead.
+
+== Reactive and asynchronous tenant propagation
+
+`TenantContext` is a request-scoped bean, and Quarkus binds the request context
+to the Vert.x duplicated context rather than to a thread. Any work that Quarkus
+dispatches on your behalf as part of the same request keeps the resolved tenant
+available, even after a thread switch. Work that jumps to a thread with no
+duplicated context loses it.
+
+The distinction that matters is not "synchronous versus asynchronous". It is
+whether the executing thread still carries the request's duplicated context.
+
+[cols="2,1,3", options="header"]
+|===
+| Boundary | Tenant available | Notes
+
+| Mutiny `Uni` pipeline (`transform`, `chain`), including `emitOn` the Quarkus
+worker pool
+| Yes
+| The duplicated context travels with the pipeline. Failure and cancellation
+callbacks run with the tenant still bound.
+
+| `@Blocking` endpoints and worker-thread offload
+| Yes
+| Quarkus dispatches the worker thread on the request's duplicated context.
+
+| `CompletionStage` run on a MicroProfile `ManagedExecutor`
+| Yes
+| Requires `quarkus-smallrye-context-propagation` (see below). The
+`ManagedExecutor` captures and restores the context around each task.
+
+| A raw JDK executor (for example `Executors.newFixedThreadPool`), or any
+executor that is not context-aware
+| No
+| The task runs on a thread with no duplicated context. Reading `TenantContext`
+there throws `ContextNotActiveException`.
+|===
+
+Concurrent requests carrying different tenants stay isolated: each request has
+its own duplicated context, so one request never observes another request's
+tenant across a supported boundary. When the request completes, whether it
+succeeds, fails, or is cancelled, its tenant context is torn down and does not
+leak onto a later request that reuses the same worker thread.
+
+=== Context-aware CompletionStage
+
+To keep the tenant across a `CompletionStage`, run it on a MicroProfile
+`ManagedExecutor` and add the dependency that provides it:
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-smallrye-context-propagation</artifactId>
+</dependency>
+----
+
+[source,java]
+----
+import java.util.concurrent.CompletionStage;
+
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+
+import org.eclipse.microprofile.context.ManagedExecutor;
+
+import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+
+@Path("/report")
+public class ReportResource {
+
+    @Inject
+    TenantContext tenantContext;
+
+    @Inject
+    ManagedExecutor managedExecutor;
+
+    @GET
+    public CompletionStage<String> report() {
+        // Runs on a context-aware thread: the tenant is still available here.
+        return managedExecutor.supplyAsync(() -> tenantContext.getTenantId().orElse("public"));
+    }
+}
+----
+
+The dependency is necessary but not sufficient: propagation only happens on the
+`ManagedExecutor` itself. Submitting to a raw executor, or to the injectable
+core `ExecutorService`, still loses the context even when the dependency is
+present.
+
+=== Crossing an unsupported boundary
+
+If you must hand work to an executor that is not context-aware, capture the
+tenant id while the request context is still active and pass the plain value
+across the boundary:
+
+[source,java]
+----
+String tenantId = tenantContext.getTenantId().orElse("public");
+rawExecutor.submit(() -> doWorkFor(tenantId)); // pass the value, not the context
+----
+
 == Resolution strategies
 
 === Header

@@ -40,6 +40,12 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-h2</artifactId>
         </dependency>
+        <!-- Provides the MicroProfile ManagedExecutor used to prove that tenant context
+             propagates across a context-aware CompletionStage boundary (issue #66). -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-context-propagation</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.quarkus</groupId>
