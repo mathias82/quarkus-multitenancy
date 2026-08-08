@@ -44,24 +44,18 @@ public interface OrmTenantConfig {
     interface HeaderFilterConfig {
 
         /**
-         * Whether the ORM-module {@code X-Tenant} header filter is
-         * registered.
+         * Whether the ORM-module header fallback is enabled.
          *
          * <p>
-         * When {@code true} (the default), every JAX-RS request must
-         * carry the {@code X-Tenant} header and the filter aborts with
-         * HTTP 400 otherwise. This preserves the historical behaviour
-         * for applications that rely on header-based tenant resolution.
+         * When {@code true} (the default), the filter resolves the tenant from
+         * the configured header only when no earlier resolution path has already
+         * populated {@code TenantContext}. This preserves ORM-only header-based
+         * resolution while allowing the HTTP tenant-resolution pipeline to remain
+         * authoritative when both modules are installed.
          *
          * <p>
-         * Set this to {@code false} when the HTTP-side tenant
-         * resolution is driven by {@code quarkus-multitenancy-http}
-         * (with any of the {@code path}, {@code jwt}, or {@code cookie}
-         * strategies) so the two filters do not collide on the request
-         * lifecycle. With the ORM filter disabled the resolved tenant
-         * still flows into Hibernate ORM through
-         * {@code OrmTenantResolverAdapter}, which only requires the
-         * shared {@code TenantContext} to be populated upstream.
+         * Set this to {@code false} only when the application does not want the ORM
+         * module to provide a header-based fallback at all.
          */
         @WithDefault("true")
         boolean enabled();
