@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
@@ -84,6 +85,35 @@ class TenantContextRunnerTest {
         runner.runAsTenant("tenant-a", () -> assertEquals("tenant-a", tenantContext.getTenantId().orElseThrow()));
 
         assertTrue(tenantContext.getTenantId().isEmpty());
+    }
+
+    @Test
+    @ActivateRequestContext
+    void shouldRejectCompletionStageAndRestorePreviousTenant() {
+        tenantContext.setTenantId("original");
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> runner.runAsTenant("tenant-a", () -> CompletableFuture.completedFuture("done")));
+
+        assertTrue(failure.getMessage().contains("synchronous work"));
+        assertEquals("original", tenantContext.getTenantId().orElseThrow());
+    }
+
+    @Test
+    void shouldRejectCompletionStageAndCloseOwnedRequestContext() throws Exception {
+        try (var executor = Executors.newSingleThreadExecutor()) {
+            executor.submit(() -> {
+                assertFalse(Arc.container().requestContext().isActive());
+
+                IllegalStateException failure = assertThrows(IllegalStateException.class,
+                        () -> runner.runAsTenant("tenant-a", () -> CompletableFuture.completedFuture("done")));
+
+                assertTrue(failure.getMessage().contains("Uni or CompletionStage"));
+                assertFalse(Arc.container().requestContext().isActive());
+            }).get();
+        } catch (ExecutionException e) {
+            throw new AssertionError(e.getCause());
+        }
     }
 
     @Test
