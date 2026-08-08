@@ -47,6 +47,16 @@ class TenantIdValidationDisabledTest {
                 .body(is("Optional[acme;DROP]"));
     }
 
+    @Test
+    void stillRejectsReservedTenant() {
+        given()
+                .header("X-Tenant", "__bootstrap")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
     public static class ValidationDisabledProfile implements QuarkusTestProfile {
         @Override
         public Map<String, String> getConfigOverrides() {

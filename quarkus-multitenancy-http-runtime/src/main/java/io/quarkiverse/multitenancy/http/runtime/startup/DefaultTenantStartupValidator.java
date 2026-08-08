@@ -49,10 +49,9 @@ import io.quarkus.runtime.StartupEvent;
  * <p>
  * This validator closes that gap by running the default tenant through the
  * very same {@link TenantIdValidator} the filter uses, so the two paths share a
- * single policy definition. When validation is turned off
- * ({@code quarkus.multi-tenant.http.tenant-id.validation-enabled=false}) the
- * validator short-circuits, leaving the default tenant unchecked exactly as
- * resolved identifiers are in that mode.
+ * single policy definition. Configurable length and pattern validation may be
+ * turned off, but identifiers reserved for internal extension use are always
+ * rejected.
  */
 @ApplicationScoped
 public class DefaultTenantStartupValidator {
@@ -77,8 +76,9 @@ public class DefaultTenantStartupValidator {
         throw new IllegalStateException(
                 "The configured default tenant (" + DEFAULT_TENANT_PROPERTY + ") violates the tenant-id policy: "
                         + rejection.get() + ". Set " + DEFAULT_TENANT_PROPERTY
-                        + " to a value that satisfies quarkus.multi-tenant.http.tenant-id.pattern and "
-                        + "quarkus.multi-tenant.http.tenant-id.max-length, or disable the policy with "
-                        + "quarkus.multi-tenant.http.tenant-id.validation-enabled=false.");
+                        + " to a non-reserved value that satisfies quarkus.multi-tenant.http.tenant-id.pattern and "
+                        + "quarkus.multi-tenant.http.tenant-id.max-length. Length and pattern validation may be disabled "
+                        + "with quarkus.multi-tenant.http.tenant-id.validation-enabled=false, but reserved identifiers "
+                        + "are always rejected.");
     }
 }

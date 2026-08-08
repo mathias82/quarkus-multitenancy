@@ -35,4 +35,14 @@ class CookieTenantResolverTest {
                 .statusCode(200)
                 .body(is("Optional[tenant-cookie]"));
     }
+
+    @Test
+    void rejectsReservedTenantFromCookie() {
+        given()
+                .cookie("tenant_cookie", "__bootstrap")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
 }

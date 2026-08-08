@@ -368,6 +368,8 @@ quarkus.multi-tenant.http.tenant-id.reject-status=400
 
 An identifier that exceeds `max-length` or does not match `pattern` in full is *rejected* with `reject-status` (HTTP `400` by default). It never reaches `TenantContext`, and the request does not fall back to `default-tenant`. This keeps untrusted input out of downstream consumers such as log lines, SQL parameters, and ORM tenant lookups.
 
+The identifier `__bootstrap` is reserved for internal Hibernate ORM startup. It is always rejected when supplied by a header, cookie, path, JWT claim, custom resolver, or `default-tenant`, even when configurable tenant-id validation is disabled.
+
 The default `400` reflects that a malformed tenant id is bad _request input_, which is distinct from an authentication failure: an untrusted or malformed bearer token still produces a `Rejected` outcome and returns `401` (see the JWT claim strategy), regardless of `reject-status`. A valid token whose tenant claim _value_ breaks the policy is a syntactic failure and is rejected with `reject-status`. Set `reject-status=401` to keep a single status for both. Only client-error (`4xx`) values are accepted: a `reject-status` outside the `400`-`499` range is a misconfiguration and fails fast at startup.
 
 When an identifier is rejected, only a sanitized, length-capped form is written to the log, with control characters (including CR/LF) replaced, to prevent log injection.
@@ -407,7 +409,7 @@ quarkus.datasource.tenant2.password=pass2
 
 The ORM adapter uses the tenant id stored in `TenantContext` to resolve the current Hibernate ORM tenant.
 
-The special `__bootstrap` tenant is used as the default/bootstrap tenant before a request tenant is available.
+The special `__bootstrap` tenant is used only as the internal default during Hibernate ORM startup, before a request tenant is available. It is not a Hibernate root tenant and cannot be selected through `TenantContext` or an external resolver.
 
 == FAQ
 

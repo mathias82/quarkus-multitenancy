@@ -26,6 +26,7 @@ import jakarta.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.multitenancy.core.runtime.context.ReservedTenantIds;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkiverse.multitenancy.orm.runtime.config.OrmTenantConfig;
 
@@ -54,6 +55,9 @@ public class OrmTenantHeaderFilter implements ContainerRequestFilter {
 
         if (tenant == null || tenant.isBlank()) {
             throw new WebApplicationException("Missing X-Tenant header", 400);
+        }
+        if (ReservedTenantIds.isReserved(tenant)) {
+            throw new WebApplicationException("Reserved tenant id", 400);
         }
 
         tenantContext.setTenantId(tenant);

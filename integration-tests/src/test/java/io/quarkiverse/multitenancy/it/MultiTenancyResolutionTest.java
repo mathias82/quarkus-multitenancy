@@ -29,7 +29,7 @@ import io.smallrye.jwt.build.Jwt;
  * class runs in the JVM (surefire); the {@code *IT} subclass replays the same assertions against
  * the native binary, so the paths that matter in production are verified to behave identically in
  * native mode: header resolution, verified-JWT resolution, tenant-id validation, default-tenant
- * fallback and the rejected-resolution path.
+ * fallback, rejected-resolution handling, and actual Hibernate ORM datasource routing.
  */
 @QuarkusTest
 class MultiTenancyResolutionTest {
@@ -61,6 +61,92 @@ class MultiTenancyResolutionTest {
                 .then()
                 .statusCode(200)
                 .body(is("jwt-tenant"));
+    }
+
+    @Test
+    void rejectsBootstrapTenantFromHeader() {
+        given()
+                .header("X-Tenant", "__bootstrap")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void rejectsBootstrapTenantFromCookie() {
+        given()
+                .cookie("tenant_cookie", "__bootstrap")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void rejectsBootstrapTenantFromPath() {
+        when()
+                .get("/t/__bootstrap/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void rejectsBootstrapTenantFromVerifiedJwt() {
+        String token = Jwt.issuer(ISSUER)
+                .upn("alice")
+                .claim("tenant", "__bootstrap")
+                .sign();
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void ormKeepsTenantDataIsolated() {
+        given()
+                .header("X-Tenant", "tenant1")
+                .when()
+                .post("/orm/tenant-one")
+                .then()
+                .statusCode(204);
+
+        given()
+                .header("X-Tenant", "tenant2")
+                .when()
+                .post("/orm/tenant-two")
+                .then()
+                .statusCode(204);
+
+        given()
+                .header("X-Tenant", "tenant1")
+                .when()
+                .get("/orm")
+                .then()
+                .statusCode(200)
+                .body(is("tenant-one"));
+
+        given()
+                .header("X-Tenant", "tenant2")
+                .when()
+                .get("/orm")
+                .then()
+                .statusCode(200)
+                .body(is("tenant-two"));
+    }
+
+    @Test
+    void rejectsBootstrapTenantBeforeOrmAccess() {
+        given()
+                .header("X-Tenant", "__bootstrap")
+                .when()
+                .get("/orm")
+                .then()
+                .statusCode(400);
     }
 
     @Test

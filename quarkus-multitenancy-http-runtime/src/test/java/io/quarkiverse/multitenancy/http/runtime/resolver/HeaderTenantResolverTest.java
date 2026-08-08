@@ -35,4 +35,14 @@ class HeaderTenantResolverTest {
                 .statusCode(200)
                 .body(is("Optional[tenant-header]"));
     }
+
+    @Test
+    void rejectsReservedTenantFromHeader() {
+        given()
+                .header("X-Tenant", "__bootstrap")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
 }

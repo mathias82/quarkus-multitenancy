@@ -15,12 +15,19 @@
  */
 package io.quarkiverse.multitenancy.orm.runtime.adapter;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.lang.reflect.Proxy;
+import java.util.Optional;
+
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkiverse.multitenancy.core.runtime.context.ReservedTenantIds;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkus.hibernate.orm.PersistenceUnitExtension;
 import io.quarkus.test.junit.QuarkusTest;
@@ -63,5 +70,47 @@ class OrmTenantResolverAdapterTest {
         assertEquals(
                 OrmTenantResolverAdapter.BOOTSTRAP_TENANT,
                 tenant);
+    }
+
+    @Test
+    void rejectsReservedTenantAtOrmBoundary() {
+        OrmTenantResolverAdapter adapter = new OrmTenantResolverAdapter();
+        adapter.tenantContext = tenantContextInstance(new TenantContext() {
+            @Override
+            public Optional<String> getTenantId() {
+                return Optional.of(ReservedTenantIds.ORM_BOOTSTRAP);
+            }
+
+            @Override
+            public void setTenantId(String tenantId) {
+            }
+
+            @Override
+            public void clear() {
+            }
+        });
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, adapter::resolveTenantId);
+
+        assertEquals("Reserved tenant id cannot be used for ORM access: __bootstrap", ex.getMessage());
+    }
+
+    @Test
+    void bootstrapTenantIsNotARootTenant() {
+        assertFalse(resolver.isRoot(OrmTenantResolverAdapter.BOOTSTRAP_TENANT));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Instance<TenantContext> tenantContextInstance(TenantContext context) {
+        return (Instance<TenantContext>) Proxy.newProxyInstance(
+                Instance.class.getClassLoader(),
+                new Class<?>[] { Instance.class },
+                (proxy, method, args) -> switch (method.getName()) {
+                    case "get" -> context;
+                    case "isUnsatisfied" -> false;
+                    case "isAmbiguous" -> false;
+                    case "toString" -> "TenantContextInstance";
+                    default -> throw new UnsupportedOperationException(method.getName());
+                });
     }
 }

@@ -19,6 +19,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
+import io.quarkiverse.multitenancy.core.runtime.context.ReservedTenantIds;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkus.hibernate.orm.PersistenceUnitExtension;
 
@@ -37,7 +38,7 @@ public class OrmTenantResolverAdapter implements io.quarkus.hibernate.orm.runtim
      * Tenant id used when no request-scoped tenant is available, such as during
      * Hibernate's bootstrap and schema handling.
      */
-    public static final String BOOTSTRAP_TENANT = "__bootstrap";
+    public static final String BOOTSTRAP_TENANT = ReservedTenantIds.ORM_BOOTSTRAP;
 
     @Inject
     Instance<TenantContext> tenantContext;
@@ -53,13 +54,14 @@ public class OrmTenantResolverAdapter implements io.quarkus.hibernate.orm.runtim
             return BOOTSTRAP_TENANT;
         }
 
-        return tenantContext.get()
+        String tenantId = tenantContext.get()
                 .getTenantId()
                 .orElseThrow(() -> new IllegalStateException("Tenant not set before ORM access"));
-    }
 
-    @Override
-    public boolean isRoot(String tenantId) {
-        return BOOTSTRAP_TENANT.equals(tenantId);
+        if (ReservedTenantIds.isReserved(tenantId)) {
+            throw new IllegalStateException("Reserved tenant id cannot be used for ORM access: " + tenantId);
+        }
+
+        return tenantId;
     }
 }
