@@ -220,6 +220,37 @@ tenant across a supported boundary. When the request completes, whether it
 succeeds, fails, or is cancelled, its tenant context is torn down and does not
 leak onto a later request that reuses the same worker thread.
 
+=== Reactive endpoints
+
+A Mutiny `Uni` pipeline keeps the tenant available across its stages, including
+after emitting on the worker pool, with no extra dependency:
+
+[source,java]
+----
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+
+import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
+
+@Path("/orders")
+public class OrderResource {
+
+    @Inject
+    TenantContext tenantContext;
+
+    @GET
+    public Uni<String> currentTenant() {
+        return Uni.createFrom().item("start")
+                .emitOn(Infrastructure.getDefaultWorkerPool())
+                // Still the same request: the tenant is available after the thread switch.
+                .onItem().transform(ignored -> tenantContext.getTenantId().orElse("public"));
+    }
+}
+----
+
 === Context-aware CompletionStage
 
 To keep the tenant across a `CompletionStage`, run it on a MicroProfile

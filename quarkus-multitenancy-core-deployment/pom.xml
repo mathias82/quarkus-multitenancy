@@ -21,5 +21,12 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc-deployment</artifactId>
         </dependency>
+        <!-- Mutiny is not on the runtime classpath (TenantContextRunner detects Uni reflectively);
+             pull it in test-scoped so the tests can assert the Uni rejection path (issue #66). -->
+        <dependency>
+            <groupId>io.smallrye.reactive</groupId>
+            <artifactId>mutiny</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

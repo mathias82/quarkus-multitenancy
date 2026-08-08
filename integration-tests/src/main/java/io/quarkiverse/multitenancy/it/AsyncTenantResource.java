@@ -15,6 +15,7 @@
  */
 package io.quarkiverse.multitenancy.it;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -68,6 +69,9 @@ public class AsyncTenantResource {
     @Inject
     RawExecutor rawExecutor;
 
+    @Inject
+    CancellationRecorder cancellationRecorder;
+
     private String currentTenant() {
         return tenantContext.getTenantId().orElse("<none>");
     }
@@ -116,5 +120,38 @@ public class AsyncTenantResource {
         return Uni.createFrom().<String> failure(new IllegalStateException("boom"))
                 .emitOn(Infrastructure.getDefaultWorkerPool())
                 .onFailure().recoverWithItem(() -> "recovered:" + currentTenant());
+    }
+
+    /**
+     * A {@code Uni} that fails on the worker pool without recovering, so the request terminates
+     * with a 500. Used to prove that a terminally failed async request tears its tenant context
+     * down and does not pollute a later request (issue #66, criterion 7).
+     */
+    @GET
+    @Path("uni-fail-terminal")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Uni<String> uniFailTerminal() {
+        return Uni.createFrom().item("start")
+                .emitOn(Infrastructure.getDefaultWorkerPool())
+                .onItem().transform(ignored -> {
+                    throw new IllegalStateException("boom:" + currentTenant());
+                });
+    }
+
+    /**
+     * A {@code Uni} that only emits after a long delay, so a client that aborts the request
+     * causes the server to cancel the subscription. The cancellation callback reads the tenant
+     * and hands it to {@link CancellationRecorder}, proving the tenant is still bound along the
+     * cancellation path (issue #66, criterion 7).
+     */
+    @GET
+    @Path("uni-cancel")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Uni<String> uniCancel() {
+        return Uni.createFrom().item("start")
+                .emitOn(Infrastructure.getDefaultWorkerPool())
+                .onItem().delayIt().by(Duration.ofSeconds(30))
+                .onItem().transform(ignored -> currentTenant())
+                .onCancellation().invoke(() -> cancellationRecorder.recordCancellation(currentTenant()));
     }
 }
