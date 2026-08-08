@@ -207,11 +207,14 @@ callbacks run with the tenant still bound.
 | Requires `quarkus-smallrye-context-propagation` (see below). The
 `ManagedExecutor` captures and restores the context around each task.
 
-| A raw JDK executor (for example `Executors.newFixedThreadPool`), or any
-executor that is not context-aware
+| Submitting work yourself to a raw JDK executor, for example
+`CompletableFuture.supplyAsync(..., Executors.newFixedThreadPool(...))`
 | No
 | The task runs on a thread with no duplicated context. Reading `TenantContext`
-there throws `ContextNotActiveException`.
+there throws `ContextNotActiveException`. Note that a Mutiny pipeline that
+`emitOn` a raw executor still propagates, because Mutiny wraps the executor when
+context propagation is present; the unsupported case is handing work to a raw
+executor outside a Mutiny pipeline or `ManagedExecutor`.
 |===
 
 Concurrent requests carrying different tenants stay isolated: each request has
