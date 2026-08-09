@@ -1,0 +1,102 @@
+= Runtime contracts and validation boundaries
+
+This page collects user-facing contracts that are enforced by the current runtime implementation and are useful when extending or integrating Quarkus Multitenancy.
+
+== Tenant resolution outcomes
+
+A `TenantResolver` returns exactly one of three `TenantResolution` outcomes:
+
+[cols="1,3", options="header"]
+|===
+| Outcome | Contract
+
+| `Resolved`
+| A tenant identifier was produced. For HTTP resolution, the identifier is validated before it is published to `TenantContext`. A resolved identifier must not be `null` or blank.
+
+| `NotApplicable`
+| The resolver had no applicable input. Dispatch continues to the next resolver or strategy. If the whole HTTP chain is not applicable, the configured `default-tenant` is used.
+
+| `Rejected`
+| The resolver processed applicable input and rejected it. HTTP dispatch stops with status `401`; the request does not fall back to `default-tenant`.
+|===
+
+Custom resolvers should therefore return `Rejected` for present-but-invalid security input instead of `NotApplicable`. Rejection reasons may appear in diagnostics, so they should be log-safe and should not embed unsanitized request-controlled values.
+
+== Resolver ordering
+
+The HTTP dispatcher uses two stages:
+
+. User-defined `TenantResolver` beans run before built-in strategies. A resolver is considered custom when its `name()` is blank, `null`, or does not match a built-in strategy name.
+. Built-in strategies then run in the exact order configured by `quarkus.multi-tenant.http.strategy`.
+
+Evaluation stops at the first `Resolved` or `Rejected` outcome.
+
+[IMPORTANT]
+====
+The current API does not define a deterministic order between multiple custom `TenantResolver` beans. Do not rely on CDI discovery/iteration order when two custom resolvers can both handle the same request. Keep custom resolvers mutually exclusive until explicit resolver priority support is available.
+====
+
+== Programmatic tenant binding is a trusted boundary
+
+`TenantContextRunner.runAsTenant(...)` is intended for application-controlled, synchronous background work. It activates the CDI request context when necessary, restores any previous tenant after completion, and rejects deferred `Uni` or `CompletionStage` results.
+
+The runner does *not* apply the HTTP or Kafka tenant-id validation policy to the supplied tenant identifier. If the tenant originates from untrusted input, validate or map it before calling `runAsTenant`.
+
+This distinction is intentional: HTTP and Kafka are external trust boundaries and validate incoming tenant metadata, while programmatic background binding is local application code.
+
+== HTTP startup validation
+
+Several HTTP configuration errors fail fast during application startup rather than changing behavior only after the first request:
+
+* unknown non-blank values in `quarkus.multi-tenant.http.strategy` are rejected; strategy names are trimmed and case-insensitive;
+* `quarkus.multi-tenant.http.tenant-id.reject-status` must be between `400` and `499`;
+* `default-tenant` is validated at startup when tenant-id validation is enabled;
+* enabling the `jwt` strategy requires a supported SmallRye JWT or Quarkus OIDC verification source unless `quarkus.multi-tenant.http.jwt.skip-startup-check=true` is explicitly set;
+* the path strategy requires a valid regular expression and `path-group` must select an existing capturing group from `1` to the pattern's group count.
+
+For path resolution, a request path that does not match the configured expression is `NotApplicable`, so dispatch continues to the next strategy and may eventually use the default tenant.
+
+== TenantContext lifecycle
+
+`TenantContext` represents the tenant associated with the active request context:
+
+* `getTenantId()` returns the current tenant when one has been bound;
+* `setTenantId(...)` replaces the current binding;
+* `clear()` removes it.
+
+It is not a global tenant store. Work that leaves the current request lifecycle must use a supported propagation mechanism instead of assuming the same `TenantContext` instance remains available.
+
+== ORM bridge contract
+
+The ORM adapter reads the tenant from the shared `TenantContext` for Hibernate ORM access. If a request context exists but no tenant has been set before ORM access, resolution fails instead of silently selecting an application tenant.
+
+The reserved `__bootstrap` identifier is used internally as Hibernate ORM's default/bootstrap tenant when no request-scoped tenant context is available. Application-selected reserved tenant identifiers are rejected before normal ORM access.
+
+The current adapter is registered with an unqualified `@PersistenceUnitExtension`, so the built-in bridge targets the default persistence unit. Applications using named persistence units need an application-specific integration until named-persistence-unit support is added.
+
+== Validation boundaries summary
+
+[cols="2,2,3", options="header"]
+|===
+| Boundary | Validation | Notes
+
+| Incoming HTTP
+| Common HTTP tenant-id policy
+| Applies to built-in and custom HTTP resolvers before publishing a `Resolved` identifier.
+
+| Incoming Kafka
+| Kafka validator chain
+| Always rejects blank/reserved identifiers; configurable Kafka policy can inherit corresponding HTTP tenant-id settings.
+
+| Outgoing Kafka
+| No incoming syntax/length policy
+| Propagates trusted local `TenantContext` state or preserves an explicitly supplied Kafka tenant header.
+
+| `TenantContextRunner`
+| No automatic tenant-id policy
+| Intended for trusted application-controlled synchronous binding.
+
+| ORM access
+| Reserved-id guard
+| Requires a tenant to have been bound for request-scoped ORM access; `__bootstrap` is reserved for internal Hibernate lifecycle use.
+|===

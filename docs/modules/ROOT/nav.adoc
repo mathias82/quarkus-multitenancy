@@ -1,1 +1,3 @@
 * xref:index.adoc[Overview]
+* xref:context-propagation.adoc[Tenant context propagation]
+* xref:runtime-contracts.adoc[Runtime contracts and validation boundaries]
