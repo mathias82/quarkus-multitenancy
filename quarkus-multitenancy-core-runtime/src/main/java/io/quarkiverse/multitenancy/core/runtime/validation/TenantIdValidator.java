@@ -50,6 +50,9 @@ public class TenantIdValidator {
     }
 
     public Optional<String> validate(String tenantId) {
+        if (tenantId == null) {
+            return Optional.of("must not be null");
+        }
         if (ReservedTenantIds.isReserved(tenantId)) {
             return Optional.of("is reserved for internal use");
         }
