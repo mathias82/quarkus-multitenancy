@@ -33,7 +33,7 @@ This behavior is provided by Quarkus REST, Vert.x, and SmallRye Context Propagat
 
 A raw executor that application code submits to directly is different: it does not automatically carry the request's duplicated context. In that case, either use a context-aware Quarkus mechanism or capture the tenant id while the request context is active and pass the plain value explicitly.
 
-See xref:index.adoc#_reactive_and_asynchronous_tenant_propagation[Reactive and asynchronous tenant propagation] for the detailed boundary table, examples, failure/cancellation behavior, and the `ManagedExecutor` contract. Keeping those details in the main guide avoids duplicating two independent versions of the same Quarkus runtime behavior.
+See xref:index.adoc#reactive-and-asynchronous-tenant-propagation[Reactive and asynchronous tenant propagation] for the detailed boundary table, examples, failure/cancellation behavior, and the `ManagedExecutor` contract. Keeping those details in the main guide avoids duplicating two independent versions of the same Quarkus runtime behavior.
 
 == Synchronous background work
 
