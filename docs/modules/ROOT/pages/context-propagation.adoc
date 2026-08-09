@@ -1,10 +1,15 @@
 = Tenant context propagation
 
-This guide describes how `TenantContext` moves beyond the initial HTTP request and which propagation boundaries are handled by each Quarkus Multitenancy module.
+This guide describes how `TenantContext` propagates within an active HTTP request and how tenant identity is carried or rebound when work leaves that request boundary.
 
 == Propagation model
 
 `TenantContext` is request scoped. Tenant resolution establishes the current tenant at an application boundary, and downstream code reads the same tenant from `TenantContext` while that request context remains active.
+
+There are two different propagation cases:
+
+* *Within an active HTTP request*, Quarkus REST, Vert.x duplicated context, and SmallRye Context Propagation preserve the request-scoped `TenantContext` across supported reactive and worker-thread boundaries automatically.
+* *After leaving the HTTP request*, use the mechanism designed for the new boundary, such as `TenantContextRunner` for synchronous background work or the Kafka module for Kafka messaging.
 
 The extension provides explicit support for three common boundaries:
 
@@ -12,7 +17,23 @@ The extension provides explicit support for three common boundaries:
 * Synchronous background work can bind a tenant explicitly with `TenantContextRunner`.
 * Kafka messages can carry the tenant in a Kafka record header and restore it for the consumer handler.
 
-Tenant context should not be treated as a global or thread-local value. Code crossing an asynchronous or messaging boundary must use the propagation mechanism appropriate for that boundary.
+Tenant context should not be treated as a global or ordinary thread-local value. The important distinction is whether work is still executing with the request's propagated Quarkus context or has crossed into a boundary that requires explicit tenant propagation.
+
+== Reactive work within an HTTP request
+
+No additional multitenancy propagation mechanism is required when Quarkus keeps asynchronous work inside the same HTTP request context.
+
+The resolved tenant remains available automatically across supported Quarkus REST boundaries, including:
+
+* Mutiny `Uni` pipelines, including supported worker-pool thread switches such as `emitOn`.
+* `@Blocking` endpoints and Quarkus worker-thread offload.
+* `CompletionStage` work executed through a MicroProfile `ManagedExecutor`.
+
+This behavior is provided by Quarkus REST, Vert.x, and SmallRye Context Propagation; it is not a separate propagation implementation in this extension. A REST endpoint returning a `Uni` or a context-aware `CompletionStage` does not need `TenantContextRunner` merely because the result is asynchronous.
+
+A raw executor that application code submits to directly is different: it does not automatically carry the request's duplicated context. In that case, either use a context-aware Quarkus mechanism or capture the tenant id while the request context is active and pass the plain value explicitly.
+
+See xref:index.adoc#_reactive_and_asynchronous_tenant_propagation[Reactive and asynchronous tenant propagation] for the detailed boundary table, examples, failure/cancellation behavior, and the `ManagedExecutor` contract. Keeping those details in the main guide avoids duplicating two independent versions of the same Quarkus runtime behavior.
 
 == Synchronous background work
 
@@ -54,7 +75,7 @@ Do not use this pattern:
 tenantRunner.runAsTenant("acme", () -> remoteCallReturningUni());
 ----
 
-The callback can outlive the temporary tenant binding. Use an asynchronous context-propagation mechanism appropriate to the framework executing that work instead of relying on `TenantContextRunner` after the callback returns.
+The callback can outlive the temporary tenant binding. This restriction applies to asynchronous work started from the temporary background binding; it does not mean reactive work inside an active Quarkus REST request needs manual tenant propagation. For background asynchronous work, use the context-propagation mechanism appropriate to the framework executing that work.
 
 == Kafka tenant propagation
 
@@ -277,11 +298,17 @@ Invalid Kafka tenant-propagation configuration fails fast instead of producing a
 | Incoming HTTP request
 | Configure the HTTP resolver chain (`header`, `cookie`, `path`, `jwt`, or a custom `TenantResolver`).
 
+| Reactive/worker work inside the same HTTP request
+| No multitenancy-specific mechanism is required for supported Quarkus boundaries such as Mutiny `Uni`, `@Blocking`, and `ManagedExecutor`; the request context is propagated by Quarkus.
+
 | Synchronous scheduled/background callback
 | Wrap the callback with `TenantContextRunner.runAsTenant(...)`.
 
-| Asynchronous result returned from background work
-| Do not rely on `TenantContextRunner`; use the context-propagation mechanism of the asynchronous framework.
+| Asynchronous work started after leaving the request or a temporary background binding
+| Do not rely on `TenantContextRunner`; use a context-aware mechanism provided by the asynchronous framework, or pass the tenant id explicitly.
+
+| Raw executor submitted to directly from request code
+| The request context is not propagated automatically; use a context-aware executor/mechanism or capture and pass the tenant id explicitly.
 
 | Outgoing Kafka message
 | Install the Kafka module; the current tenant is stamped into Kafka record metadata automatically.
@@ -296,4 +323,4 @@ Treat tenant identifiers received from HTTP or Kafka as untrusted input and keep
 
 For tenant-sensitive Kafka workloads, consider enabling both strict missing-tenant options so messages cannot silently cross a tenant boundary without metadata. Pair incoming nack behavior with an explicit Kafka failure strategy that matches the application's retry and dead-letter requirements.
 
-Keep the tenant boundary explicit when moving work outside a request. `TenantContextRunner` is intended for synchronous background callbacks, while Kafka propagation is intended for Kafka connector boundaries; neither is a general-purpose global context store.
+Keep the tenant boundary explicit when moving work outside a request. Supported Quarkus REST reactive and worker boundaries preserve the active request context automatically; `TenantContextRunner` is intended for synchronous work that needs a temporary tenant binding, while Kafka propagation is intended for Kafka connector boundaries. None of these mechanisms turns `TenantContext` into a global context store.
