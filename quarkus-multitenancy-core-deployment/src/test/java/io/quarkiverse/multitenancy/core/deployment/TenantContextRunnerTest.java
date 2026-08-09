@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
@@ -33,6 +34,7 @@ import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContextRunner;
 import io.quarkus.arc.Arc;
 import io.quarkus.test.junit.QuarkusTest;
+import io.smallrye.mutiny.Uni;
 
 @QuarkusTest
 class TenantContextRunnerTest {
@@ -97,6 +99,36 @@ class TenantContextRunnerTest {
 
         assertTrue(failure.getMessage().contains("synchronous work"));
         assertEquals("original", tenantContext.getTenantId().orElseThrow());
+    }
+
+    @Test
+    @ActivateRequestContext
+    void shouldRejectUniAndRestorePreviousTenant() {
+        tenantContext.setTenantId("original");
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> runner.runAsTenant("tenant-a", () -> Uni.createFrom().item("done")));
+
+        assertTrue(failure.getMessage().contains("Uni or CompletionStage"));
+        assertEquals("original", tenantContext.getTenantId().orElseThrow());
+    }
+
+    @Test
+    @ActivateRequestContext
+    void shouldRejectDeferredUniBeforeItsBodyRuns() {
+        // A deferred Uni whose item supplier flips the flag only when subscribed. The runner must
+        // reject the Uni without subscribing, so the deferred body never runs after the tenant
+        // context has already been restored — the exact silent-async footgun issue #66 guards.
+        AtomicBoolean deferredBodyRan = new AtomicBoolean(false);
+
+        assertThrows(IllegalStateException.class,
+                () -> runner.runAsTenant("tenant-a",
+                        () -> Uni.createFrom().item(() -> {
+                            deferredBodyRan.set(true);
+                            return "done";
+                        })));
+
+        assertFalse(deferredBodyRan.get());
     }
 
     @Test
