@@ -1,0 +1,25 @@
+= Migration notes for 0.2
+
+== ORM-only tenant header validation
+
+The ORM fallback header now uses the same shared tenant-id validation policy as HTTP resolution.
+
+For ORM-only applications, this is a small compatibility change: tenant identifiers that previously passed through the legacy ORM header filter may now be rejected when they exceed the configured maximum length or do not match the configured pattern. With the default policy, for example, an identifier such as `acme.co` is rejected because `.` is not included in `[A-Za-z0-9_-]+`.
+
+If existing tenant identifiers use a wider format, configure the ORM policy explicitly before upgrading:
+
+[source,properties]
+----
+quarkus.multi-tenant.orm.tenant-id.validation-enabled=true
+quarkus.multi-tenant.orm.tenant-id.max-length=64
+quarkus.multi-tenant.orm.tenant-id.pattern=[A-Za-z0-9_.-]+
+----
+
+Applications can also disable configurable length/pattern validation with:
+
+[source,properties]
+----
+quarkus.multi-tenant.orm.tenant-id.validation-enabled=false
+----
+
+Reserved internal tenant identifiers remain rejected regardless of that setting.
