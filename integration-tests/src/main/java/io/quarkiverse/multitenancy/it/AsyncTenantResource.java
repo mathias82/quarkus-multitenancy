@@ -39,6 +39,11 @@ import io.smallrye.mutiny.infrastructure.Infrastructure;
  * contract for reactive and asynchronous execution (issue #66).
  *
  * <p>
+ * All of these boundaries work in a plain Quarkus REST application with no added dependency:
+ * {@code quarkus-rest} already brings {@code quarkus-smallrye-context-propagation} transitively, so
+ * the MicroProfile {@code ManagedExecutor} used by {@code /async/cs-managed} is available too.
+ *
+ * <p>
  * Each endpoint exercises one boundary:
  * <ul>
  * <li>{@code /async/uni-emiton} — a Mutiny {@code Uni} whose work is emitted on the Quarkus
@@ -46,8 +51,7 @@ import io.smallrye.mutiny.infrastructure.Infrastructure;
  * <li>{@code /async/blocking} — a {@code @Blocking} endpoint that reads on a worker thread.
  * <strong>Supported.</strong></li>
  * <li>{@code /async/cs-managed} — a {@code CompletionStage} run on a MicroProfile
- * {@link ManagedExecutor}. <strong>Supported,</strong> and the reason this module depends on
- * {@code quarkus-smallrye-context-propagation}.</li>
+ * {@link ManagedExecutor}. <strong>Supported.</strong></li>
  * <li>{@code /async/raw-executor} — a {@code CompletionStage} run on a raw, non-context-aware
  * JDK pool. <strong>Unsupported:</strong> reading the request-scoped context there throws
  * {@link ContextNotActiveException}, which this endpoint reports as a stable marker.</li>
@@ -153,5 +157,16 @@ public class AsyncTenantResource {
                 .onItem().delayIt().by(Duration.ofSeconds(30))
                 .onItem().transform(ignored -> currentTenant())
                 .onCancellation().invoke(() -> cancellationRecorder.recordCancellation(currentTenant()));
+    }
+
+    /**
+     * Exposes the tenant that {@code /async/uni-cancel} saw in its cancellation callback, so the
+     * test can assert it over HTTP and stay black-box in native mode.
+     */
+    @GET
+    @Path("uni-cancel/observed")
+    @Produces(MediaType.TEXT_PLAIN)
+    public CompletionStage<String> uniCancelObserved() {
+        return cancellationRecorder.observed();
     }
 }

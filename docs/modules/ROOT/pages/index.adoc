@@ -188,6 +188,22 @@ duplicated context loses it.
 The distinction that matters is not "synchronous versus asynchronous". It is
 whether the executing thread still carries the request's duplicated context.
 
+[NOTE]
+====
+This propagation is provided by Quarkus REST, Vert.x, and SmallRye context
+propagation, not by this extension. The extension only exposes the resolved
+tenant through a request-scoped `TenantContext`; whether that context survives a
+given thread switch is decided by the underlying Quarkus runtime. The table
+below documents the behavior of the current Quarkus release so you know what to
+rely on; a future Quarkus change to context propagation could shift a row, and
+that would be a Quarkus change rather than a multitenancy regression.
+====
+
+The boundaries below all work in a Quarkus REST application with *no added
+dependency*: `quarkus-rest` already brings `quarkus-smallrye-context-propagation`
+transitively, which is what makes the `ManagedExecutor` case below work out of
+the box.
+
 [cols="2,1,3", options="header"]
 |===
 | Boundary | Tenant available | Notes
@@ -204,17 +220,17 @@ callbacks run with the tenant still bound.
 
 | `CompletionStage` run on a MicroProfile `ManagedExecutor`
 | Yes
-| Requires `quarkus-smallrye-context-propagation` (see below). The
-`ManagedExecutor` captures and restores the context around each task.
+| The `ManagedExecutor` captures and restores the context around each task. Its
+provider, `quarkus-smallrye-context-propagation`, is already present transitively
+in a `quarkus-rest` application.
 
 | Submitting work yourself to a raw JDK executor, for example
 `CompletableFuture.supplyAsync(..., Executors.newFixedThreadPool(...))`
 | No
 | The task runs on a thread with no duplicated context. Reading `TenantContext`
-there throws `ContextNotActiveException`. Note that a Mutiny pipeline that
-`emitOn` a raw executor still propagates, because Mutiny wraps the executor when
-context propagation is present; the unsupported case is handing work to a raw
-executor outside a Mutiny pipeline or `ManagedExecutor`.
+there throws `ContextNotActiveException`. The supported way to keep the tenant is
+a Mutiny pipeline or a `ManagedExecutor`; a raw executor you submit to yourself is
+the unsupported case.
 |===
 
 Concurrent requests carrying different tenants stay isolated: each request has
@@ -257,7 +273,9 @@ public class OrderResource {
 === Context-aware CompletionStage
 
 To keep the tenant across a `CompletionStage`, run it on a MicroProfile
-`ManagedExecutor` and add the dependency that provides it:
+`ManagedExecutor`. In a Quarkus REST application no dependency needs to be added:
+`quarkus-rest` brings `quarkus-smallrye-context-propagation` transitively. Only a
+non-REST Quarkus application would add it explicitly:
 
 [source,xml]
 ----
@@ -296,10 +314,10 @@ public class ReportResource {
 }
 ----
 
-The dependency is necessary but not sufficient: propagation only happens on the
-`ManagedExecutor` itself. Submitting to a raw executor, or to the injectable
-core `ExecutorService`, still loses the context even when the dependency is
-present.
+Having context propagation on the classpath is not enough on its own:
+propagation happens only when the work runs on the `ManagedExecutor`. Submitting
+to a raw executor, or to the injectable core `ExecutorService`, still loses the
+context.
 
 === Crossing an unsupported boundary
 

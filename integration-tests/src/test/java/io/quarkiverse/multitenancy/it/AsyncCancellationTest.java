@@ -17,7 +17,6 @@ package io.quarkiverse.multitenancy.it;
 
 import static io.restassured.RestAssured.when;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URL;
@@ -26,9 +25,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-
-import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.Test;
 
@@ -38,18 +34,14 @@ import io.quarkus.test.junit.QuarkusTest;
 /**
  * Verifies the cancellation half of issue #66 criterion 7: a reactive request that is cancelled
  * (here by the client aborting mid-flight) still runs its cancellation callback with the tenant
- * bound, and leaves no tenant behind for a later request. Kept JVM-only because it depends on
- * client-abort timing; the supported contract itself is replayed in native by
- * {@link AsyncPropagationIT}.
+ * bound, and leaves no tenant behind for a later request. The tenant seen at cancellation is read
+ * back over HTTP, so {@link AsyncCancellationIT} can replay this against the native binary.
  */
 @QuarkusTest
 class AsyncCancellationTest {
 
     @TestHTTPResource("/async/uni-cancel")
     URL cancelUrl;
-
-    @Inject
-    CancellationRecorder cancellationRecorder;
 
     @Test
     void cancelledReactiveRequestRunsWithTenantBoundAndLeavesNoLeak() throws Exception {
@@ -65,8 +57,11 @@ class AsyncCancellationTest {
         assertThrows(HttpTimeoutException.class, () -> client.send(request, BodyHandlers.ofString()));
 
         // The cancellation callback observed the tenant that was bound to the cancelled request.
-        String tenantAtCancellation = cancellationRecorder.awaitCancellationTenant(10, TimeUnit.SECONDS);
-        assertEquals("acme", tenantAtCancellation);
+        when()
+                .get("/async/uni-cancel/observed")
+                .then()
+                .statusCode(200)
+                .body(is("acme"));
 
         // The cancelled request left no tenant behind: a following no-header request falls back to
         // the default rather than inheriting "acme".

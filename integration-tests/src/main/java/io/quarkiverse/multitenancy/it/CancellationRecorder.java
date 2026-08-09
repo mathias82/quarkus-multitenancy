@@ -16,14 +16,15 @@
 package io.quarkiverse.multitenancy.it;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
- * Captures the tenant observed inside the cancellation callback of {@code /async/uni-cancel}, so
- * {@link AsyncCancellationTest} can assert that a cancelled reactive request still runs with its
- * tenant bound (issue #66, criterion 7).
+ * Captures the tenant observed inside the cancellation callback of {@code /async/uni-cancel}. The
+ * captured value is exposed over HTTP (rather than injected) so {@link AsyncCancellationTest} works
+ * unchanged black-box against the native binary as well (issue #66, criterion 7).
  */
 @ApplicationScoped
 public class CancellationRecorder {
@@ -34,7 +35,11 @@ public class CancellationRecorder {
         tenantAtCancellation.complete(tenantId);
     }
 
-    String awaitCancellationTenant(long timeout, TimeUnit unit) throws Exception {
-        return tenantAtCancellation.get(timeout, unit);
+    /**
+     * Completes with the tenant seen at cancellation, or times out so the observing request never
+     * hangs forever if the cancellation callback never runs.
+     */
+    CompletionStage<String> observed() {
+        return tenantAtCancellation.copy().orTimeout(15, TimeUnit.SECONDS);
     }
 }

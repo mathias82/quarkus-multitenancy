@@ -39,6 +39,11 @@ import io.quarkus.test.junit.QuarkusTest;
  * so the supported contract is verified identically in JVM and native mode.
  *
  * <p>
+ * Every boundary here is exercised in a plain Quarkus REST application with no added dependency,
+ * including the MicroProfile {@code ManagedExecutor} case, because {@code quarkus-rest} already
+ * brings {@code quarkus-smallrye-context-propagation} transitively.
+ *
+ * <p>
  * The synchronous-only behaviour of {@code TenantContextRunner} with deferred results
  * ({@code Uni} / {@code CompletionStage}), including rejection before a deferred body runs, is
  * covered as a unit contract in {@code TenantContextRunnerTest} and is not duplicated here.
