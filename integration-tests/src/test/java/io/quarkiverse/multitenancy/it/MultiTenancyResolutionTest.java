@@ -60,6 +60,33 @@ class MultiTenancyResolutionTest {
     }
 
     @Test
+    void rejectedHttpTenantCannotBeRescuedByOrmFallback() {
+        given()
+                .header("X-Tenant", "acme.invalid")
+                .header("X-Orm-Tenant", "orm-tenant")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void rejectedJwtCannotBeRescuedByOrmFallback() {
+        String token = Jwt.issuer("https://attacker.example/issuer")
+                .upn("mallory")
+                .claim("tenant", "attacker")
+                .sign();
+
+        given()
+                .header("Authorization", "Bearer " + token)
+                .header("X-Orm-Tenant", "orm-tenant")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
     void resolvesTenantFromVerifiedJwt() {
         String token = Jwt.issuer(ISSUER)
                 .upn("alice")
