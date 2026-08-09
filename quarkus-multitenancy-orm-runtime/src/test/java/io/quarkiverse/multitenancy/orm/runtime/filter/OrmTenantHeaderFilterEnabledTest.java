@@ -17,6 +17,10 @@ package io.quarkiverse.multitenancy.orm.runtime.filter;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.Priorities;
 
 import org.junit.jupiter.api.Test;
 
@@ -75,5 +79,21 @@ class OrmTenantHeaderFilterEnabledTest {
                 .get("/echo")
                 .then()
                 .statusCode(400);
+    }
+
+    @Test
+    void invalidHeader_returns400() {
+        given()
+                .header("X-Tenant", "acme;DROP")
+                .when()
+                .get("/echo")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void fallbackRunsAfterAuthenticationPriority() {
+        Priority priority = OrmTenantHeaderFilter.class.getAnnotation(Priority.class);
+        assertEquals(Priorities.AUTHENTICATION + 100, priority.value());
     }
 }

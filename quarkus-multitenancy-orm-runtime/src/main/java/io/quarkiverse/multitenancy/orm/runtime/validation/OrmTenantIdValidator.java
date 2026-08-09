@@ -13,34 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.quarkiverse.multitenancy.http.runtime.validation;
+package io.quarkiverse.multitenancy.orm.runtime.validation;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
+import io.quarkiverse.multitenancy.orm.runtime.config.OrmTenantConfig;
 
 /**
- * HTTP-configured compatibility facade over the shared core tenant-id validator.
- *
- * <p>
- * Keeps the existing HTTP validator type available while delegating the validation
- * policy to the common core implementation used by other resolution paths.
+ * ORM-configured adapter for the shared core tenant-id validator.
  */
 @ApplicationScoped
-public class TenantIdValidator
+public class OrmTenantIdValidator
         extends io.quarkiverse.multitenancy.core.runtime.validation.TenantIdValidator {
 
-    /**
-     * Creates the validator from the HTTP tenant-id configuration.
-     *
-     * @param config HTTP multitenancy configuration
-     */
     @Inject
-    public TenantIdValidator(HttpTenantConfig config) {
+    public OrmTenantIdValidator(OrmTenantConfig config) {
         super(config.tenantId().validationEnabled(),
                 config.tenantId().maxLength(),
                 config.tenantId().pattern(),
-                "quarkus.multi-tenant.http.tenant-id.pattern");
+                "quarkus.multi-tenant.orm.tenant-id.pattern");
     }
 }
