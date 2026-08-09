@@ -1,1 +1,2 @@
 * xref:index.adoc[Overview]
+* xref:migration-0.2.adoc[Migration notes for 0.2]
