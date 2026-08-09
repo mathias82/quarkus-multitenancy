@@ -171,6 +171,166 @@ necessary. The previous tenant is restored after the callback completes,
 including when the callback throws, so nested and sequential calls do not leak
 tenant state.
 
+`TenantContextRunner` is synchronous only. Returning a `CompletionStage` or a
+Mutiny `Uni` from the callback is rejected immediately, because the callback
+would return before the asynchronous work runs and the tenant would already
+have been restored. For asynchronous work, rely on the propagation contract
+below instead.
+
+== Reactive and asynchronous tenant propagation
+
+`TenantContext` is a request-scoped bean, and Quarkus binds the request context
+to the Vert.x duplicated context rather than to a thread. Any work that Quarkus
+dispatches on your behalf as part of the same request keeps the resolved tenant
+available, even after a thread switch. Work that jumps to a thread with no
+duplicated context loses it.
+
+The distinction that matters is not "synchronous versus asynchronous". It is
+whether the executing thread still carries the request's duplicated context.
+
+[NOTE]
+====
+This propagation is provided by Quarkus REST, Vert.x, and SmallRye context
+propagation, not by this extension. The extension only exposes the resolved
+tenant through a request-scoped `TenantContext`; whether that context survives a
+given thread switch is decided by the underlying Quarkus runtime. The table
+below documents the behavior of the current Quarkus release so you know what to
+rely on; a future Quarkus change to context propagation could shift a row, and
+that would be a Quarkus change rather than a multitenancy regression.
+====
+
+The boundaries below all work in a Quarkus REST application with *no added
+dependency*: `quarkus-rest` already brings `quarkus-smallrye-context-propagation`
+transitively, which is what makes the `ManagedExecutor` case below work out of
+the box.
+
+[cols="2,1,3", options="header"]
+|===
+| Boundary | Tenant available | Notes
+
+| Mutiny `Uni` pipeline (`transform`, `chain`), including `emitOn` the Quarkus
+worker pool
+| Yes
+| The duplicated context travels with the pipeline. Failure and cancellation
+callbacks run with the tenant still bound.
+
+| `@Blocking` endpoints and worker-thread offload
+| Yes
+| Quarkus dispatches the worker thread on the request's duplicated context.
+
+| `CompletionStage` run on a MicroProfile `ManagedExecutor`
+| Yes
+| The `ManagedExecutor` captures and restores the context around each task. Its
+provider, `quarkus-smallrye-context-propagation`, is already present transitively
+in a `quarkus-rest` application.
+
+| Submitting work yourself to a raw JDK executor, for example
+`CompletableFuture.supplyAsync(..., Executors.newFixedThreadPool(...))`
+| No
+| The task runs on a thread with no duplicated context. Reading `TenantContext`
+there throws `ContextNotActiveException`. The supported way to keep the tenant is
+a Mutiny pipeline or a `ManagedExecutor`; a raw executor you submit to yourself is
+the unsupported case.
+|===
+
+Concurrent requests carrying different tenants stay isolated: each request has
+its own duplicated context, so one request never observes another request's
+tenant across a supported boundary. When the request completes, whether it
+succeeds, fails, or is cancelled, its tenant context is torn down and does not
+leak onto a later request that reuses the same worker thread.
+
+=== Reactive endpoints
+
+A Mutiny `Uni` pipeline keeps the tenant available across its stages, including
+after emitting on the worker pool, with no extra dependency:
+
+[source,java]
+----
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+
+import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
+
+@Path("/orders")
+public class OrderResource {
+
+    @Inject
+    TenantContext tenantContext;
+
+    @GET
+    public Uni<String> currentTenant() {
+        return Uni.createFrom().item("start")
+                .emitOn(Infrastructure.getDefaultWorkerPool())
+                // Still the same request: the tenant is available after the thread switch.
+                .onItem().transform(ignored -> tenantContext.getTenantId().orElse("public"));
+    }
+}
+----
+
+=== Context-aware CompletionStage
+
+To keep the tenant across a `CompletionStage`, run it on a MicroProfile
+`ManagedExecutor`. In a Quarkus REST application no dependency needs to be added:
+`quarkus-rest` brings `quarkus-smallrye-context-propagation` transitively. Only a
+non-REST Quarkus application would add it explicitly:
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-smallrye-context-propagation</artifactId>
+</dependency>
+----
+
+[source,java]
+----
+import java.util.concurrent.CompletionStage;
+
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+
+import org.eclipse.microprofile.context.ManagedExecutor;
+
+import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+
+@Path("/report")
+public class ReportResource {
+
+    @Inject
+    TenantContext tenantContext;
+
+    @Inject
+    ManagedExecutor managedExecutor;
+
+    @GET
+    public CompletionStage<String> report() {
+        // Runs on a context-aware thread: the tenant is still available here.
+        return managedExecutor.supplyAsync(() -> tenantContext.getTenantId().orElse("public"));
+    }
+}
+----
+
+Having context propagation on the classpath is not enough on its own:
+propagation happens only when the work runs on the `ManagedExecutor`. Submitting
+to a raw executor, or to the injectable core `ExecutorService`, still loses the
+context.
+
+=== Crossing an unsupported boundary
+
+If you must hand work to an executor that is not context-aware, capture the
+tenant id while the request context is still active and pass the plain value
+across the boundary:
+
+[source,java]
+----
+String tenantId = tenantContext.getTenantId().orElse("public");
+rawExecutor.submit(() -> doWorkFor(tenantId)); // pass the value, not the context
+----
+
 == Resolution strategies
 
 === Header
