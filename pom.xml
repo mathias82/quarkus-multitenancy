@@ -61,7 +61,7 @@
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
-        <quarkus.version>3.38.0</quarkus.version>
+        <quarkus.version>3.33.3.1</quarkus.version>
     </properties>
 
     <dependencyManagement>
