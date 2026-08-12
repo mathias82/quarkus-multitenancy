@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.Map;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import org.junit.jupiter.api.Test;
@@ -67,6 +68,19 @@ class TenantFilterDispatchTest {
                 .then()
                 .statusCode(200)
                 .body(is("Optional[from-custom]"));
+    }
+
+    @Test
+    void higherPriorityCustomResolverWinsDeterministically() {
+        given()
+                .header("X-High-Priority-Tenant", "high-priority")
+                .header("X-Low-Priority-Tenant", "low-priority")
+                .header("X-Tenant", "built-in")
+                .when()
+                .get("/tenant")
+                .then()
+                .statusCode(200)
+                .body(is("Optional[high-priority]"));
     }
 
     @Test
@@ -182,5 +196,33 @@ class TenantFilterDispatchTest {
                     })
                     .orElseGet(TenantResolution::notApplicable);
         }
+    }
+
+    @Priority(200)
+    @ApplicationScoped
+    public static class HighPriorityTenantResolver implements TenantResolver {
+
+        @Override
+        public TenantResolution resolve(TenantResolutionContext context) {
+            return resolveHeader(context, "X-High-Priority-Tenant");
+        }
+    }
+
+    @Priority(100)
+    @ApplicationScoped
+    public static class LowPriorityTenantResolver implements TenantResolver {
+
+        @Override
+        public TenantResolution resolve(TenantResolutionContext context) {
+            return resolveHeader(context, "X-Low-Priority-Tenant");
+        }
+    }
+
+    private static TenantResolution resolveHeader(TenantResolutionContext context, String headerName) {
+        return context.get(jakarta.ws.rs.container.ContainerRequestContext.class)
+                .map(req -> req.getHeaderString(headerName))
+                .filter(value -> !value.isBlank())
+                .<TenantResolution> map(TenantResolution::resolved)
+                .orElseGet(TenantResolution::notApplicable);
     }
 }

@@ -16,7 +16,6 @@
 package io.quarkiverse.multitenancy.core.runtime.core;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.jboss.logging.Logger;
@@ -38,24 +37,23 @@ public class CompositeTenantResolver {
     private static final Logger logger = Logger.getLogger(CompositeTenantResolver.class);
 
     @Inject
-    Instance<TenantResolver> resolvers;
+    TenantResolverRegistry resolverRegistry;
 
     public TenantResolution resolve(TenantResolutionContext context) {
-        if (resolvers.isUnsatisfied()) {
+        var resolvers = resolverRegistry.orderedResolvers();
+        if (resolvers.isEmpty()) {
             logger.debug("No TenantResolvers found");
             return TenantResolution.notApplicable();
         }
 
         for (TenantResolver resolver : resolvers) {
             TenantResolution result = resolver.resolve(context);
-            if (result instanceof TenantResolution.Resolved resolved) {
-                logger.debugf("Tenant resolved by %s = '%s'",
-                        resolver.getClass().getSimpleName(), resolved.tenantId());
+            if (result instanceof TenantResolution.Resolved) {
+                logger.debugf("Tenant resolved by %s", resolver.getClass().getSimpleName());
                 return result;
             }
-            if (result instanceof TenantResolution.Rejected rejected) {
-                logger.debugf("Tenant resolution rejected by %s: %s",
-                        resolver.getClass().getSimpleName(), rejected.reason());
+            if (result instanceof TenantResolution.Rejected) {
+                logger.debugf("Tenant resolution rejected by %s", resolver.getClass().getSimpleName());
                 return result;
             }
         }

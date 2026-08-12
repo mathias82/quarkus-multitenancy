@@ -17,6 +17,7 @@ package io.quarkiverse.multitenancy.http.runtime.resolver;
 
 import java.util.Optional;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -67,6 +68,7 @@ import io.quarkus.security.identity.SecurityIdentity;
  * {@code mp.jwt.verify.publickey.location} plus a pinned algorithm) for the
  * JWT strategy to function.
  */
+@Priority(TenantResolver.DEFAULT_PRIORITY)
 @ApplicationScoped
 public class JwtTenantResolver implements TenantResolver {
 
@@ -137,7 +139,7 @@ public class JwtTenantResolver implements TenantResolver {
             return TenantResolution.rejected("JWT tenant claim is blank");
         }
 
-        logger.debugf("Resolved tenant '%s' from JWT claim '%s'", tenant, claimName);
+        logger.debugf("Tenant resolved from JWT claim '%s'", claimName);
         return TenantResolution.resolved(tenant);
     }
 

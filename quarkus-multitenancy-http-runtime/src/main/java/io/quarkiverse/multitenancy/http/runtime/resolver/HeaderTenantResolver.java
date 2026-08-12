@@ -17,6 +17,7 @@ package io.quarkiverse.multitenancy.http.runtime.resolver;
 
 import java.util.Optional;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -29,6 +30,7 @@ import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantStrategy;
 
+@Priority(TenantResolver.DEFAULT_PRIORITY)
 @ApplicationScoped
 public class HeaderTenantResolver implements TenantResolver {
 
@@ -59,7 +61,7 @@ public class HeaderTenantResolver implements TenantResolver {
         }
 
         String tenant = header.trim();
-        logger.debugf("Resolved tenant '%s' from header '%s'", tenant, headerName);
+        logger.debugf("Tenant resolved from header '%s'", headerName);
         return TenantResolution.resolved(tenant);
     }
 }
