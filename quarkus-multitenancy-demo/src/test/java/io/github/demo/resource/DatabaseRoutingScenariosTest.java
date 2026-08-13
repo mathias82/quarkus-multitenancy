@@ -26,7 +26,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 
 @QuarkusTest
-@QuarkusTestResource(TenantDatabasesTestResource.class)
+@QuarkusTestResource(value = TenantDatabasesTestResource.class, restrictToAnnotatedClass = true)
 class DatabaseRoutingScenariosTest {
 
     @Test
