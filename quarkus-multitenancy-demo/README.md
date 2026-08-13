@@ -23,6 +23,11 @@ Databases:
 - `tenant1` → `localhost:5433/tenant1` → `user1 / pass1`
 - `tenant2` → `localhost:5434/tenant2` → `user2 / pass2`
 
+Each database starts with distinct seed data so routing is immediately visible:
+
+- `tenant1@example.com` exists only in `tenant1`
+- `tenant2@example.com` exists only in `tenant2`
+
 ## Tenant resolution scenarios
 
 Header:
@@ -41,6 +46,7 @@ Path:
 
 ```bash
 curl http://localhost:8080/api/users/tenant/path/tenant2
+curl http://localhost:8080/api/users/path/tenant2
 ```
 
 Default tenant (`tenant1`):
@@ -53,30 +59,30 @@ When multiple inputs are present, the configured chain applies in order. For exa
 
 ## ORM isolation
 
-Create one user in each tenant:
-
-```bash
-curl -X POST -H "X-Tenant: tenant1" -H "Content-Type: application/json" \
-  -d '{"name":"Alice","email":"alice@tenant1.test"}' \
-  http://localhost:8080/api/users
-
-curl -X POST -H "X-Tenant: tenant2" -H "Content-Type: application/json" \
-  -d '{"name":"Bob","email":"bob@tenant2.test"}' \
-  http://localhost:8080/api/users
-```
-
 Read each database independently:
 
 ```bash
 curl -H "X-Tenant: tenant1" http://localhost:8080/api/users
 curl -H "X-Tenant: tenant2" http://localhost:8080/api/users
+curl --cookie "tenant_cookie=tenant2" http://localhost:8080/api/users
+curl http://localhost:8080/api/users/path/tenant2
 ```
+
+Every response must contain only the selected tenant's data.
 
 ## Tests
 
 `TenantResolutionScenariosTest` runs without PostgreSQL and covers header, cookie, path, default-tenant resolution, and precedence.
 
-`UserResourceTest` exercises the PostgreSQL-backed ORM flow when both demo databases are available.
+`DatabaseRoutingScenariosTest` starts two real PostgreSQL Testcontainers with different seed rows and verifies end-to-end database routing and isolation for:
+
+- header → tenant1 and tenant2
+- cookie → tenant2
+- path → tenant2
+- default tenant → tenant1
+- header-over-cookie precedence
+
+`UserResourceTest` remains as the manually configured PostgreSQL CRUD example when the demo databases are running on ports 5433 and 5434.
 
 From the repository root:
 
