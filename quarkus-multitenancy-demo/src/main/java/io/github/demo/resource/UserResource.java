@@ -44,6 +44,12 @@ public class UserResource {
         return User.listAll();
     }
 
+    @GET
+    @Path("/path/{tenant}")
+    public List<User> listByPath(@PathParam("tenant") String ignored) {
+        return User.listAll();
+    }
+
     @POST
     @Transactional
     public User create(User user) {
