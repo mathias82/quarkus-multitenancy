@@ -17,12 +17,15 @@ package io.quarkiverse.multitenancy.core.runtime.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -70,6 +73,54 @@ class CompositeTenantResolverTest {
         assertTrue(result instanceof TenantResolution.NotApplicable);
     }
 
+    @Test
+    void shouldRunHigherPriorityResolverFirst() {
+        TestTenantResolutionContext ctx = new TestTenantResolutionContext();
+        ctx.put(String.class, "lower-priority");
+        ctx.put(Integer.class, 777);
+
+        TenantResolution result = compositeTenantResolver.resolve(ctx);
+
+        TenantResolution.Resolved resolved = assertInstanceOf(TenantResolution.Resolved.class, result);
+        assertEquals("777", resolved.tenantId());
+    }
+
+    @Test
+    void shouldUseImplementationClassNameForEqualPriorities() {
+        TestTenantResolutionContext ctx = new TestTenantResolutionContext();
+        ctx.put(Long.class, 1L);
+
+        TenantResolution result = compositeTenantResolver.resolve(ctx);
+
+        TenantResolution.Resolved resolved = assertInstanceOf(TenantResolution.Resolved.class, result);
+        assertEquals("alpha-equal", resolved.tenantId());
+    }
+
+    @Test
+    void shouldUseStableDefaultPriorityOrder() {
+        TestTenantResolutionContext ctx = new TestTenantResolutionContext();
+        ctx.put(Double.class, 1.0);
+
+        TenantResolution result = compositeTenantResolver.resolve(ctx);
+
+        TenantResolution.Resolved resolved = assertInstanceOf(TenantResolution.Resolved.class, result);
+        assertEquals("alpha-default", resolved.tenantId());
+    }
+
+    @Test
+    void shouldRejectIrreduciblyAmbiguousOrder() {
+        String implementationClass = HeaderTenantResolver.class.getName();
+        var descriptors = List.of(
+                new TenantResolverRegistry.ResolverDescriptor(100, implementationClass, "first-bean"),
+                new TenantResolverRegistry.ResolverDescriptor(100, implementationClass, "second-bean"));
+
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> TenantResolverRegistry.validateDeterministicTieBreakers(descriptors));
+
+        assertTrue(failure.getMessage().contains("Ambiguous TenantResolver order"));
+        assertTrue(failure.getMessage().contains("@Priority"));
+    }
+
     static class TestTenantResolutionContext implements TenantResolutionContext {
         private final Map<Class<?>, Object> values = new HashMap<>();
 
@@ -85,6 +136,7 @@ class CompositeTenantResolverTest {
     }
 
     @ApplicationScoped
+    @Priority(100)
     static class HeaderTenantResolver implements TenantResolver {
         @Override
         public TenantResolution resolve(TenantResolutionContext context) {
@@ -95,11 +147,54 @@ class CompositeTenantResolverTest {
     }
 
     @ApplicationScoped
+    @Priority(200)
     static class CookieTenantResolver implements TenantResolver {
         @Override
         public TenantResolution resolve(TenantResolutionContext context) {
             return context.get(Integer.class)
                     .<TenantResolution> map(i -> TenantResolution.resolved(i.toString()))
+                    .orElseGet(TenantResolution::notApplicable);
+        }
+    }
+
+    @ApplicationScoped
+    @Priority(50)
+    static class AlphaEqualPriorityResolver implements TenantResolver {
+        @Override
+        public TenantResolution resolve(TenantResolutionContext context) {
+            return context.get(Long.class)
+                    .<TenantResolution> map(ignored -> TenantResolution.resolved("alpha-equal"))
+                    .orElseGet(TenantResolution::notApplicable);
+        }
+    }
+
+    @ApplicationScoped
+    @Priority(50)
+    static class ZuluEqualPriorityResolver implements TenantResolver {
+        @Override
+        public TenantResolution resolve(TenantResolutionContext context) {
+            return context.get(Long.class)
+                    .<TenantResolution> map(ignored -> TenantResolution.resolved("zulu-equal"))
+                    .orElseGet(TenantResolution::notApplicable);
+        }
+    }
+
+    @ApplicationScoped
+    static class AlphaDefaultPriorityResolver implements TenantResolver {
+        @Override
+        public TenantResolution resolve(TenantResolutionContext context) {
+            return context.get(Double.class)
+                    .<TenantResolution> map(ignored -> TenantResolution.resolved("alpha-default"))
+                    .orElseGet(TenantResolution::notApplicable);
+        }
+    }
+
+    @ApplicationScoped
+    static class ZuluDefaultPriorityResolver implements TenantResolver {
+        @Override
+        public TenantResolution resolve(TenantResolutionContext context) {
+            return context.get(Double.class)
+                    .<TenantResolution> map(ignored -> TenantResolution.resolved("zulu-default"))
                     .orElseGet(TenantResolution::notApplicable);
         }
     }

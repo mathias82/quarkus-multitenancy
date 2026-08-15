@@ -16,13 +16,13 @@
 package io.quarkiverse.multitenancy.http.runtime.filter;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -35,6 +35,7 @@ import org.jboss.logging.Logger;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolution;
 import io.quarkiverse.multitenancy.core.runtime.api.TenantResolver;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+import io.quarkiverse.multitenancy.core.runtime.core.TenantResolverRegistry;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantConfig;
 import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantStrategy;
 import io.quarkiverse.multitenancy.http.runtime.ctx.HttpTenantResolutionContext;
@@ -50,7 +51,8 @@ import io.quarkiverse.multitenancy.http.runtime.validation.TenantIdValidator;
  * <li>User-defined (custom) {@link TenantResolver} beans — anything whose
  * {@link TenantResolver#name()} is blank or does not match a known
  * {@link HttpTenantStrategy}. Custom resolvers express explicit user
- * intent and run first.</li>
+ * intent and run first, ordered by descending {@link Priority} and then by
+ * implementation class name.</li>
  * <li>Built-in resolvers in the order declared by
  * {@link HttpTenantConfig#strategy()}.</li>
  * </ol>
@@ -87,7 +89,7 @@ public class TenantFilter implements ContainerRequestFilter {
             .collect(Collectors.toUnmodifiableSet());
 
     @Inject
-    Instance<TenantResolver> resolvers;
+    TenantResolverRegistry resolverRegistry;
 
     @Inject
     TenantContext tenantContext;
@@ -105,15 +107,15 @@ public class TenantFilter implements ContainerRequestFilter {
             return;
         }
 
-        logger.debugf("Incoming request: %s %s",
-                requestContext.getMethod(), requestContext.getUriInfo().getRequestUri());
+        logger.debugf("Resolving tenant for incoming %s request", requestContext.getMethod());
 
         HttpTenantResolutionContext ctx = new HttpTenantResolutionContext(requestContext);
+        List<TenantResolver> resolvers = resolverRegistry.orderedResolvers();
 
-        TenantResolution outcome = runCustomResolvers(ctx);
+        TenantResolution outcome = runCustomResolvers(ctx, resolvers);
 
         if (outcome instanceof TenantResolution.NotApplicable) {
-            outcome = runConfiguredBuiltins(ctx);
+            outcome = runConfiguredBuiltins(ctx, resolvers);
         }
 
         if (outcome instanceof TenantResolution.Resolved resolved) {
@@ -129,8 +131,8 @@ public class TenantFilter implements ContainerRequestFilter {
             return;
         }
 
-        if (outcome instanceof TenantResolution.Rejected rejected) {
-            logger.debugf("Tenant resolution rejected: %s", rejected.reason());
+        if (outcome instanceof TenantResolution.Rejected) {
+            logger.debug("Tenant resolution rejected; returning HTTP 401");
             requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
             return;
         }
@@ -141,10 +143,10 @@ public class TenantFilter implements ContainerRequestFilter {
         logger.debugf("No resolver matched; falling back to default tenant '%s'", defaultTenant);
     }
 
-    private TenantResolution runCustomResolvers(HttpTenantResolutionContext ctx) {
+    private TenantResolution runCustomResolvers(HttpTenantResolutionContext ctx, List<TenantResolver> resolvers) {
         for (TenantResolver r : resolvers) {
             if (isCustom(r)) {
-                TenantResolution result = r.resolve(ctx);
+                TenantResolution result = resolveWithDiagnostics(r, ctx);
                 if (!(result instanceof TenantResolution.NotApplicable)) {
                     return result;
                 }
@@ -153,18 +155,18 @@ public class TenantFilter implements ContainerRequestFilter {
         return TenantResolution.notApplicable();
     }
 
-    private TenantResolution runConfiguredBuiltins(HttpTenantResolutionContext ctx) {
+    private TenantResolution runConfiguredBuiltins(HttpTenantResolutionContext ctx, List<TenantResolver> resolvers) {
         for (String configured : config.strategy()) {
             HttpTenantStrategy strategy = parseStrategy(configured);
             if (strategy == null) {
                 continue;
             }
-            Optional<TenantResolver> match = findBuiltin(strategy);
+            Optional<TenantResolver> match = findBuiltin(strategy, resolvers);
             if (match.isEmpty()) {
                 logger.debugf("No built-in resolver registered for strategy '%s'", strategy);
                 continue;
             }
-            TenantResolution result = match.get().resolve(ctx);
+            TenantResolution result = resolveWithDiagnostics(match.get(), ctx);
             if (!(result instanceof TenantResolution.NotApplicable)) {
                 return result;
             }
@@ -188,7 +190,7 @@ public class TenantFilter implements ContainerRequestFilter {
         return strategy.get();
     }
 
-    private Optional<TenantResolver> findBuiltin(HttpTenantStrategy strategy) {
+    private Optional<TenantResolver> findBuiltin(HttpTenantStrategy strategy, List<TenantResolver> resolvers) {
         String target = strategy.name();
         for (TenantResolver r : resolvers) {
             if (target.equals(r.name())) {
@@ -196,6 +198,16 @@ public class TenantFilter implements ContainerRequestFilter {
             }
         }
         return Optional.empty();
+    }
+
+    private TenantResolution resolveWithDiagnostics(TenantResolver resolver, HttpTenantResolutionContext ctx) {
+        TenantResolution result = resolver.resolve(ctx);
+        if (result instanceof TenantResolution.Resolved) {
+            logger.debugf("Tenant resolved by %s", resolver.getClass().getSimpleName());
+        } else if (result instanceof TenantResolution.Rejected) {
+            logger.debugf("Tenant resolution rejected by %s", resolver.getClass().getSimpleName());
+        }
+        return result;
     }
 
     private boolean isCustom(TenantResolver r) {

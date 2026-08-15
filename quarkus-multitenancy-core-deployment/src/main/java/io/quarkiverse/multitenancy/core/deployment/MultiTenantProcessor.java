@@ -18,6 +18,7 @@ package io.quarkiverse.multitenancy.core.deployment;
 import io.quarkiverse.multitenancy.core.runtime.context.DefaultTenantContext;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContextRunner;
 import io.quarkiverse.multitenancy.core.runtime.core.CompositeTenantResolver;
+import io.quarkiverse.multitenancy.core.runtime.core.TenantResolverRegistry;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -38,6 +39,7 @@ public class MultiTenantProcessor {
                 .addBeanClass(DefaultTenantContext.class)
                 .addBeanClass(TenantContextRunner.class)
                 .addBeanClass(CompositeTenantResolver.class)
+                .addBeanClass(TenantResolverRegistry.class)
                 .build());
     }
 }

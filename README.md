@@ -92,7 +92,7 @@ quarkus.multi-tenant.http.path-pattern=^/t/([^/]+)(?:/|$)
 quarkus.multi-tenant.http.path-group=1
 ```
 
-Custom CDI beans implementing `TenantResolver` run before the configured built-in chain. Built-in resolvers run in the order declared by `quarkus.multi-tenant.http.strategy`.
+Custom CDI beans implementing `TenantResolver` run before the configured built-in chain. Annotate custom resolvers with Jakarta `@Priority` when more than one may handle the same request; higher values run first, the default is `0`, and equal priorities are ordered by implementation class name. Built-in resolvers run in the order declared by `quarkus.multi-tenant.http.strategy`.
 
 ### HTTP tenant-id validation
 

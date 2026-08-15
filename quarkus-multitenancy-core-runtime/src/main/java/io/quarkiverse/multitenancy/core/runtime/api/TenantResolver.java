@@ -15,6 +15,8 @@
  */
 package io.quarkiverse.multitenancy.core.runtime.api;
 
+import jakarta.annotation.Priority;
+
 /**
  * Strategy interface for resolving the tenant.
  *
@@ -25,8 +27,21 @@ package io.quarkiverse.multitenancy.core.runtime.api;
  * must return {@link TenantResolution#rejected(String)} rather than
  * {@link TenantResolution#notApplicable()}, so the dispatcher can abort the
  * request with 401 instead of silently falling back to the default tenant.
+ *
+ * <p>
+ * When multiple resolvers are available, applications can use
+ * {@link Priority @Priority} to define their order. Higher numeric values run
+ * first. Resolvers without an explicit annotation use
+ * {@link #DEFAULT_PRIORITY}. Equal-priority resolvers are ordered by their
+ * implementation class name.
  */
 public interface TenantResolver {
+
+    /**
+     * Priority assigned by Quarkus Arc when a resolver has no explicit
+     * {@link Priority @Priority} annotation.
+     */
+    int DEFAULT_PRIORITY = 0;
 
     /**
      * Resolve the tenant for the current request.

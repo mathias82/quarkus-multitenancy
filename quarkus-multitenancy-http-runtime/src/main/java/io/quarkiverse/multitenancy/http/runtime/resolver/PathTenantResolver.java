@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -38,6 +39,7 @@ import io.quarkiverse.multitenancy.http.runtime.config.HttpTenantStrategy;
  * regular expression. Default pattern matches {@code /t/{tenant}} or
  * {@code /t/{tenant}/...} and extracts the tenant from capturing group 1.
  */
+@Priority(TenantResolver.DEFAULT_PRIORITY)
 @ApplicationScoped
 public class PathTenantResolver implements TenantResolver {
 
@@ -94,7 +96,7 @@ public class PathTenantResolver implements TenantResolver {
 
         Matcher matcher = pattern.matcher(normalized);
         if (!matcher.find()) {
-            logger.debugf("Path '%s' did not match pattern '%s'", normalized, pattern.pattern());
+            logger.debugf("Request path did not match tenant pattern '%s'", pattern.pattern());
             return TenantResolution.notApplicable();
         }
 
@@ -104,7 +106,7 @@ public class PathTenantResolver implements TenantResolver {
         }
 
         String trimmed = tenant.trim();
-        logger.debugf("Resolved tenant '%s' from path '%s'", trimmed, normalized);
+        logger.debug("Tenant resolved from request path");
         return TenantResolution.resolved(trimmed);
     }
 }

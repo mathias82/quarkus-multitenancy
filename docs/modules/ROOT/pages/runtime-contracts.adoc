@@ -31,10 +31,33 @@ The HTTP dispatcher uses two stages:
 
 Evaluation stops at the first `Resolved` or `Rejected` outcome.
 
-[IMPORTANT]
-====
-The current API does not define a deterministic order between multiple custom `TenantResolver` beans. Do not rely on CDI discovery/iteration order when two custom resolvers can both handle the same request. Keep custom resolvers mutually exclusive until explicit resolver priority support is available.
-====
+Multiple custom resolvers are ordered deterministically:
+
+. A resolver annotated with `jakarta.annotation.Priority` runs before a resolver with a lower numeric priority.
+. A resolver without `@Priority` has the default priority `0`.
+. Resolvers with the same priority are ordered by fully qualified implementation class name.
+. Two beans with the same implementation type and priority are ambiguous and fail application startup with an actionable error. Assign distinct priorities to make the intent explicit.
+
+For example:
+
+[source,java]
+----
+@ApplicationScoped
+@Priority(200)
+public class ContractTenantResolver implements TenantResolver {
+    // ...
+}
+
+@ApplicationScoped
+@Priority(100)
+public class HeaderOverrideTenantResolver implements TenantResolver {
+    // ...
+}
+----
+
+`ContractTenantResolver` runs first. When it returns `NotApplicable`, resolution continues with `HeaderOverrideTenantResolver`. The first `Resolved` or `Rejected` result stops evaluation.
+
+The built-in HTTP resolvers explicitly use priority `0`. Their relative order is still controlled by `quarkus.multi-tenant.http.strategy`, because configured strategy order takes precedence inside the built-in stage. Custom resolvers continue to run before that stage for backward compatibility.
 
 == Programmatic tenant binding is a trusted boundary
 
