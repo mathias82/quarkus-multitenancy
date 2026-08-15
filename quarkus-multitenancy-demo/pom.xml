@@ -16,6 +16,7 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <!-- Example application: not a published artifact, so no Javadoc is generated for it. -->
         <maven.javadoc.skip>true</maven.javadoc.skip>
+        <testcontainers.version>2.0.5</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -45,6 +46,14 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+
+        <!-- Real PostgreSQL instances for database-routing integration tests. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-postgresql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

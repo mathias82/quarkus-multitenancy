@@ -5,3 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255),
     email VARCHAR(255)
 );
+
+INSERT INTO users(name, email)
+SELECT 'Tenant Two User', 'tenant2@example.com'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'tenant2@example.com');
