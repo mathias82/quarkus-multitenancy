@@ -95,7 +95,7 @@ The ORM adapter reads the tenant from the shared `TenantContext` for Hibernate O
 
 The reserved `__bootstrap` identifier is used internally as Hibernate ORM's default/bootstrap tenant when no request-scoped tenant context is available. Application-selected reserved tenant identifiers are rejected before normal ORM access.
 
-The current adapter is registered with an unqualified `@PersistenceUnitExtension`, so the built-in bridge targets the default persistence unit. Applications using named persistence units need an application-specific integration until named-persistence-unit support is added.
+The built-in bridge targets the default persistence unit automatically. Named multitenant persistence units can opt in through `quarkus.multi-tenant.orm.named-persistence-units`; every selected unit reads from the same `TenantContext` and preserves the `__bootstrap` fallback. A non-selected persistence unit receives no named adapter. An application-provided `TenantResolver` for a persistence unit overrides the built-in default bean without creating a CDI ambiguity.
 
 == Validation boundaries summary
 

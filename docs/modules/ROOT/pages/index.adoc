@@ -622,6 +622,25 @@ quarkus.datasource.tenant2.username=user2
 quarkus.datasource.tenant2.password=pass2
 ----
 
+The default Hibernate ORM persistence unit is integrated automatically. To use
+the shared `TenantContext` with named multitenant persistence units, select them
+explicitly at build time:
+
+[source,properties]
+----
+quarkus.multi-tenant.orm.named-persistence-units=users,inventory
+
+quarkus.hibernate-orm."users".multitenant=DATABASE
+quarkus.hibernate-orm."inventory".multitenant=SCHEMA
+----
+
+Every selected name must identify an existing named Hibernate ORM persistence
+unit with multitenancy enabled. The application fails to build with an
+actionable configuration error when a name is unknown or its persistence unit
+is not multitenant. Non-selected persistence units receive no named adapter.
+An application-provided `TenantResolver` for a persistence unit overrides the
+built-in adapter without CDI ambiguity.
+
 The ORM adapter uses the tenant id stored in `TenantContext` to resolve the current Hibernate ORM tenant.
 
 The special `__bootstrap` tenant is used only as the internal default during Hibernate ORM startup, before a request tenant is available. It is not a Hibernate root tenant and cannot be selected through `TenantContext` or an external resolver.
