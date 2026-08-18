@@ -1,0 +1,82 @@
+= Programmatic tenant connections
+
+include::../partials/attributes.adoc[]
+
+Quarkus Hibernate ORM already provides the `io.quarkus.hibernate.orm.runtime.tenant.TenantConnectionResolver` SPI for applications whose tenant databases cannot be represented as a fixed set of named datasources.
+
+The multitenancy extension supplies the tenant identifier through `TenantContext`. An application-provided `TenantConnectionResolver` can then translate that identifier into a Hibernate `ConnectionProvider` backed by connection details from a database, control plane, or another catalog.
+
+== Runnable example
+
+The repository demo contains a complete implementation:
+
+* `TenantConnectionCatalog` is the application-owned catalog abstraction.
+* `ConfiguredTenantConnectionCatalog` is a small configuration-backed example.
+* `ProgrammaticTenantConnectionResolver` creates Agroal pools and connects them to Narayana transactions.
+* `ProgrammaticDatabaseRoutingTest` runs the flow against two isolated H2 databases without Docker.
+* `DatabaseRoutingScenariosTest` runs the same routing contract against two PostgreSQL Testcontainers.
+
+Only the datasource used during Hibernate startup remains a Quarkus-managed datasource:
+
+[source,properties]
+----
+quarkus.hibernate-orm.multitenant=DATABASE
+quarkus.hibernate-orm.datasource=__bootstrap
+
+quarkus.datasource.__bootstrap.db-kind=postgresql
+quarkus.datasource.__bootstrap.jdbc.url=jdbc:postgresql://localhost:5433/postgres
+quarkus.datasource.__bootstrap.username=user1
+quarkus.datasource.__bootstrap.password=pass1
+----
+
+Tenant connection details live in the example catalog rather than `quarkus.datasource.<tenant>`:
+
+[source,properties]
+----
+demo.tenant-catalog.tenants.tenant1.jdbc-url=jdbc:postgresql://localhost:5433/tenant1
+demo.tenant-catalog.tenants.tenant1.username=user1
+demo.tenant-catalog.tenants.tenant1.password=pass1
+
+demo.tenant-catalog.tenants.tenant2.jdbc-url=jdbc:postgresql://localhost:5434/tenant2
+demo.tenant-catalog.tenants.tenant2.username=user2
+demo.tenant-catalog.tenants.tenant2.password=pass2
+----
+
+The resolver is a CDI bean qualified for the default persistence unit:
+
+[source,java]
+----
+@ApplicationScoped
+@PersistenceUnitExtension
+public class ProgrammaticTenantConnectionResolver implements TenantConnectionResolver {
+    @Override
+    public ConnectionProvider resolve(String tenantId) {
+        // Look up the tenant, create its Agroal pool, and return a stable provider.
+    }
+}
+----
+
+Use `@PersistenceUnitExtension("nameOfYourPU")` when targeting a named persistence unit.
+
+== Security and lifecycle boundaries
+
+The example is intentionally the first, bounded phase of dynamic tenant onboarding. It proves programmatic discovery and first-use pool creation; it is not a managed pool lifecycle implementation.
+
+[IMPORTANT]
+====
+Hibernate ORM caches the `ConnectionProvider` resolved for a tenant. Updating the backing catalog after first use does not automatically replace the provider that Hibernate already holds.
+====
+
+Before supporting live add/update/remove operations, an application or extension must define:
+
+* atomic pool replacement and the behavior of in-flight connections;
+* drain timeouts and forced closure when a tenant is removed;
+* credential rotation and secret refresh semantics;
+* whether re-registering an existing tenant is an update or an error;
+* health checks and metrics for pools created outside Quarkus datasource configuration.
+
+Programmatically created providers do not receive every automatic integration available to Quarkus-managed datasources. Add explicit health and metrics coverage for them.
+
+The demo stores connection values in configuration only to remain runnable. Production catalogs should return secret references or retrieve credentials from an approved secret store. Avoid logging catalog records, JDBC URLs containing credentials, or passwords.
+
+For the underlying SPI contract, see the https://quarkus.io/guides/hibernate-orm#programmatically-resolving-tenants-connections[Quarkus Hibernate ORM guide].

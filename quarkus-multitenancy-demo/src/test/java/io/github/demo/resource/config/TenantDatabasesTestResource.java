@@ -37,12 +37,12 @@ public class TenantDatabasesTestResource implements QuarkusTestResourceLifecycle
                 "quarkus.datasource.__bootstrap.jdbc.url", tenant1.getJdbcUrl(),
                 "quarkus.datasource.__bootstrap.username", tenant1.getUsername(),
                 "quarkus.datasource.__bootstrap.password", tenant1.getPassword(),
-                "quarkus.datasource.tenant1.jdbc.url", tenant1.getJdbcUrl(),
-                "quarkus.datasource.tenant1.username", tenant1.getUsername(),
-                "quarkus.datasource.tenant1.password", tenant1.getPassword(),
-                "quarkus.datasource.tenant2.jdbc.url", tenant2.getJdbcUrl(),
-                "quarkus.datasource.tenant2.username", tenant2.getUsername(),
-                "quarkus.datasource.tenant2.password", tenant2.getPassword());
+                "demo.tenant-catalog.tenants.tenant1.jdbc-url", tenant1.getJdbcUrl(),
+                "demo.tenant-catalog.tenants.tenant1.username", tenant1.getUsername(),
+                "demo.tenant-catalog.tenants.tenant1.password", tenant1.getPassword(),
+                "demo.tenant-catalog.tenants.tenant2.jdbc-url", tenant2.getJdbcUrl(),
+                "demo.tenant-catalog.tenants.tenant2.username", tenant2.getUsername(),
+                "demo.tenant-catalog.tenants.tenant2.password", tenant2.getPassword());
     }
 
     @Override
