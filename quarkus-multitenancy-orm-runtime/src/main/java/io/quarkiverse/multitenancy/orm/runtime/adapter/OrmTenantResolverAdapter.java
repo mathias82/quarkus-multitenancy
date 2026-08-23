@@ -21,6 +21,7 @@ import jakarta.inject.Inject;
 
 import io.quarkiverse.multitenancy.core.runtime.context.ReservedTenantIds;
 import io.quarkiverse.multitenancy.core.runtime.context.TenantContext;
+import io.quarkus.arc.DefaultBean;
 import io.quarkus.hibernate.orm.PersistenceUnitExtension;
 
 /**
@@ -31,6 +32,7 @@ import io.quarkus.hibernate.orm.PersistenceUnitExtension;
  * during schema bootstrap, outside of a request).
  */
 @PersistenceUnitExtension
+@DefaultBean
 @ApplicationScoped
 public class OrmTenantResolverAdapter implements io.quarkus.hibernate.orm.runtime.tenant.TenantResolver {
 
