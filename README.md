@@ -232,7 +232,16 @@ When HTTP tenant resolution is handled by `quarkus-multitenancy-http` — especi
 quarkus.multi-tenant.orm.header-filter.enabled=false
 ```
 
-The current ORM adapter is registered as an unqualified `@PersistenceUnitExtension`, so its integration targets the default Hibernate ORM persistence unit.
+The default Hibernate ORM persistence unit is integrated automatically. To use the same `TenantContext` with named multitenant persistence units, select them explicitly at build time:
+
+```properties
+quarkus.multi-tenant.orm.named-persistence-units=users,inventory
+
+quarkus.hibernate-orm."users".multitenant=DATABASE
+quarkus.hibernate-orm."inventory".multitenant=SCHEMA
+```
+
+Every selected name must identify an existing Hibernate ORM persistence unit with multitenancy enabled. A non-selected, non-multitenant unit receives no adapter. If the application provides its own `TenantResolver` for a persistence unit, that resolver overrides the built-in adapter without creating a CDI ambiguity.
 
 ## Propagation boundaries
 
