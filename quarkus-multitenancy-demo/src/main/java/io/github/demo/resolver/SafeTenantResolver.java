@@ -32,7 +32,7 @@ public class SafeTenantResolver implements TenantResolver {
     private static final String HEADER_NAME = "X-Tenant";
 
     @Inject
-    TenantDataSourceRegistry registry;
+    TenantConnectionCatalog catalog;
 
     @Override
     public TenantResolution resolve(TenantResolutionContext context) {
@@ -51,7 +51,7 @@ public class SafeTenantResolver implements TenantResolver {
 
         tenantId = tenantId.trim();
 
-        if (!registry.exists(tenantId)) {
+        if (catalog.find(tenantId).isEmpty()) {
             throw new TenantNotFoundException(tenantId);
         }
 

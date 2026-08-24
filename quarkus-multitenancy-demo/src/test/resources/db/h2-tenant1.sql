@@ -1,0 +1,3 @@
+CREATE SEQUENCE IF NOT EXISTS users_SEQ START WITH 1 INCREMENT BY 50;
+CREATE TABLE IF NOT EXISTS users (id BIGINT PRIMARY KEY, name VARCHAR(255), email VARCHAR(255) UNIQUE);
+MERGE INTO users (id, name, email) KEY(email) VALUES (1, 'Tenant One User', 'tenant1@example.com');
