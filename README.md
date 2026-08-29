@@ -1,4 +1,4 @@
-# 🧩 Quarkus Multitenancy
+# 🧩 Quarkus Multitenancy Extension
 
 [![Build](https://github.com/quarkiverse/quarkus-multitenancy/actions/workflows/build.yml/badge.svg)](https://github.com/quarkiverse/quarkus-multitenancy/actions/workflows/build.yml)
 [![Documentation](https://img.shields.io/badge/docs-Quarkiverse-blue)](https://docs.quarkiverse.io/quarkus-multitenancy/dev/)
@@ -9,9 +9,17 @@
 
 > **Resolve a tenant once. Keep it across HTTP, reactive code, Kafka, background work, and Hibernate ORM.**
 
-Quarkus Multitenancy is a modular Quarkiverse extension for applications that need one consistent tenant identity across application boundaries.
+A modular multitenancy extension for Quarkus providing a shared tenant context, pluggable HTTP resolution, Kafka tenant propagation, and Hibernate ORM integration.
 
-Instead of resolving and passing tenant identifiers independently in every layer, the extension provides a shared request-scoped `TenantContext` and integrations that resolve, propagate, validate, and consume that context where it matters.
+Quarkus Multitenancy provides a generic tenant-resolution contract and a request-scoped `TenantContext` that can be reused across application and integration boundaries.
+
+The extension focuses on **tenant identification and propagation**. It does not create database, schema, cache, or authorization isolation by itself; those remain application and framework configuration concerns.
+
+## Why this exists
+
+Quarkus already provides powerful building blocks such as OIDC multitenancy and Hibernate ORM multitenancy. Applications still frequently need a common tenant abstraction that can be resolved once and consumed consistently across HTTP, persistence, messaging, background work, and custom integrations.
+
+This extension provides that reusable layer while keeping the individual integrations independent.
 
 ```text
                          ┌──────────────────────────┐
@@ -37,46 +45,16 @@ Instead of resolving and passing tenant identifiers independently in every layer
                                                   TenantContext
 ```
 
-## Why use it?
+### End-to-end in 60 seconds
 
-A multitenant application usually has more than one tenant boundary. A tenant may arrive in an HTTP header, a JWT claim, a cookie, or a URL path; the same request may then access Hibernate ORM, execute reactive work, and publish Kafka messages consumed by another service.
-
-Without a shared contract, each integration tends to invent its own tenant lookup and propagation rules.
-
-Quarkus Multitenancy gives those boundaries one model:
-
-- **Resolve once** — built-in HTTP strategies plus custom CDI resolvers.
-- **Fail safely** — distinguish missing input from explicitly rejected/untrusted input.
-- **Validate external tenant IDs** — configurable validation and reserved-ID protection.
-- **Keep context through Quarkus reactive boundaries** — `Uni`, `@Blocking`, and context-aware `ManagedExecutor` work remain tenant-aware within the active request.
-- **Propagate through Kafka** — automatically stamp the tenant on outgoing records and restore it for consumers.
-- **Route Hibernate ORM** — bridge the same `TenantContext` into multitenant persistence units.
-- **Run tenant-scoped jobs** — explicitly bind a tenant for synchronous scheduled or background work.
-- **Adopt incrementally** — HTTP, Kafka, and ORM integrations are separate modules.
-
-> [!IMPORTANT]
-> The extension handles **tenant identification and propagation**. Database/schema isolation, cache isolation, and authorization remain explicit application/framework concerns.
-
-## 60-second example
-
-### 1. Resolve the tenant at HTTP ingress
-
-```properties
-quarkus.multi-tenant.http.strategy=header,jwt,cookie,path
-quarkus.multi-tenant.http.header-name=X-Tenant
-quarkus.multi-tenant.http.jwt-claim-name=tenant
-quarkus.multi-tenant.http.default-tenant=public
-quarkus.multi-tenant.http.path-pattern=^/t/([^/]+)(?:/|$)
-```
-
-A request such as:
+An incoming request can establish a tenant once:
 
 ```http
 POST /orders
 X-Tenant: acme
 ```
 
-establishes `acme` in the shared context:
+Downstream application code reads the shared context:
 
 ```java
 @Inject
@@ -85,15 +63,7 @@ TenantContext tenantContext;
 String tenant = tenantContext.getTenantId().orElseThrow();
 ```
 
-### 2. Use the same tenant in Hibernate ORM
-
-Add `quarkus-multitenancy-orm` and configure Quarkus Hibernate ORM multitenancy. The extension bridges the active `TenantContext` into Hibernate ORM's tenant resolver.
-
-Application code does not need to parse `X-Tenant` again before persistence access.
-
-### 3. Send it through Kafka
-
-Add `quarkus-multitenancy-messaging-kafka` and publish normally:
+Hibernate ORM can use that same context for tenant routing. If the application then publishes through a Kafka channel:
 
 ```java
 @Inject
@@ -105,19 +75,13 @@ void publish(String order) {
 }
 ```
 
-With tenant `acme` active, the Kafka record automatically carries:
+the Kafka integration can propagate the current tenant as record metadata:
 
 ```text
 X-Tenant: acme
 ```
 
-On the consumer side, enable the Quarkus Messaging request scope:
-
-```properties
-quarkus.messaging.request-scoped.enabled=true
-```
-
-Then consume normally:
+and restore it for the consumer handler:
 
 ```java
 @Incoming("orders")
@@ -127,15 +91,48 @@ void consume(String order) {
 }
 ```
 
-The incoming header is validated before it reaches `TenantContext`, and the previous context is restored across the asynchronous acknowledgment lifecycle.
+**One tenant identity from HTTP ingress to persistence to Kafka consumer, without putting `tenantId` in every application payload.**
 
-**One tenant identity, from HTTP ingress to persistence to Kafka consumer.**
+See the [Kafka tenant propagation guide](docs/modules/ROOT/pages/kafka-tenant-propagation.adoc) for the complete messaging contract, validation, strict missing-tenant policies, and failure handling.
 
-For the complete flow, explicit-header precedence, missing-tenant policies, validation, and failure handling, see the [Kafka tenant propagation guide](docs/modules/ROOT/pages/kafka-tenant-propagation.adoc).
+## Modules
 
-## Install only what you need
+| Module | Responsibility |
+| --- | --- |
+| `quarkus-multitenancy-core-runtime` | `TenantContext`, `TenantResolver`, resolution outcomes, and synchronous tenant binding |
+| `quarkus-multitenancy-core-deployment` | Core Quarkus build-time integration |
+| `quarkus-multitenancy-http-runtime` | HTTP tenant resolution from header, cookie, JWT claim, path, or custom resolvers |
+| `quarkus-multitenancy-http-deployment` | HTTP integration registration |
+| `quarkus-multitenancy-messaging-kafka-runtime` | Incoming and outgoing Kafka tenant propagation |
+| `quarkus-multitenancy-messaging-kafka-deployment` | Kafka integration registration |
+| `quarkus-multitenancy-orm-runtime` | Bridges the shared `TenantContext` into Hibernate ORM tenant resolution |
+| `quarkus-multitenancy-orm-deployment` | ORM integration registration |
+| `quarkus-multitenancy-demo` | PostgreSQL multi-tenant demo application |
 
-### HTTP resolution
+## Core model
+
+`TenantContext` is request scoped and exposes the active tenant to downstream code:
+
+```java
+@Inject
+TenantContext tenantContext;
+
+String tenant = tenantContext.getTenantId().orElseThrow();
+```
+
+Tenant resolvers return one of three explicit outcomes:
+
+| Outcome | Meaning |
+| --- | --- |
+| `Resolved` | A tenant identifier was resolved successfully |
+| `NotApplicable` | The resolver had no applicable input, so resolution may continue |
+| `Rejected` | Input was present but invalid or untrusted; the request must not silently fall back |
+
+For HTTP requests, a `Rejected` outcome aborts the request with HTTP `401`. If every resolver returns `NotApplicable`, the configured default tenant is used.
+
+## HTTP tenant resolution
+
+Add the HTTP extension:
 
 ```xml
 <dependency>
@@ -145,23 +142,106 @@ For the complete flow, explicit-header precedence, missing-tenant policies, vali
 </dependency>
 ```
 
-Built-in strategies:
+The built-in HTTP strategies are:
 
-```text
-header → cookie → JWT claim → path → custom CDI resolvers
+- `header` — tenant from a configurable HTTP header, default `X-Tenant`
+- `cookie` — tenant from a configurable cookie, default `tenant_cookie`
+- `jwt` — tenant from a verified JWT claim, default `tenant`
+- `path` — tenant from a configurable request-path regular expression
+
+The default built-in strategy chain is:
+
+```properties
+quarkus.multi-tenant.http.strategy=header,cookie
 ```
 
-The configured strategy order is deterministic. Custom `TenantResolver` beans execute before built-ins and can use Jakarta `@Priority` when several resolvers may apply.
+A complete example:
 
-Resolver outcomes are explicit:
+```properties
+quarkus.multi-tenant.http.enabled=true
+quarkus.multi-tenant.http.strategy=header,jwt,cookie,path
+quarkus.multi-tenant.http.header-name=X-Tenant
+quarkus.multi-tenant.http.cookie-name=tenant_cookie
+quarkus.multi-tenant.http.jwt-claim-name=tenant
+quarkus.multi-tenant.http.default-tenant=public
+quarkus.multi-tenant.http.path-pattern=^/t/([^/]+)(?:/|$)
+quarkus.multi-tenant.http.path-group=1
+```
 
-| Outcome | Meaning |
-| --- | --- |
-| `Resolved` | A trusted tenant was found |
-| `NotApplicable` | No applicable input; resolution may continue |
-| `Rejected` | Input was present but invalid/untrusted; do not silently fall back |
+Custom CDI beans implementing `TenantResolver` run before the configured built-in chain. Annotate custom resolvers with Jakarta `@Priority` when more than one may handle the same request; higher values run first, the default is `0`, and equal priorities are ordered by implementation class name. Built-in resolvers run in the order declared by `quarkus.multi-tenant.http.strategy`.
 
-### Kafka propagation
+### HTTP tenant-id validation
+
+Resolved HTTP tenant identifiers are validated before they are published to `TenantContext`:
+
+```properties
+quarkus.multi-tenant.http.tenant-id.validation-enabled=true
+quarkus.multi-tenant.http.tenant-id.max-length=64
+quarkus.multi-tenant.http.tenant-id.pattern=[A-Za-z0-9_-]+
+quarkus.multi-tenant.http.tenant-id.reject-status=400
+```
+
+The default rejection status for an invalid resolved identifier is HTTP `400`. This is intentionally different from a resolver-level `Rejected` outcome, which represents an authentication/trust failure and produces HTTP `401`.
+
+Invalid strategy names, invalid tenant-validation configuration, invalid path regular expressions, invalid path capture groups, and incompatible JWT setup fail fast during startup where applicable.
+
+## JWT tenant resolution
+
+The `jwt` strategy is opt-in and expects a verified identity supplied by SmallRye JWT, Quarkus OIDC, or an application-provided `JsonWebToken` bean.
+
+Example with SmallRye JWT:
+
+```properties
+quarkus.multi-tenant.http.strategy=jwt
+quarkus.multi-tenant.http.jwt-claim-name=tenant
+
+mp.jwt.verify.publickey.location=publicKey.pem
+mp.jwt.verify.publickey.algorithm=RS256
+mp.jwt.verify.issuer=https://issuer.example.com
+```
+
+If a bearer token is present but cannot be trusted, or the configured tenant claim is invalid, the request is rejected and does not fall back to the default tenant.
+
+Applications that intentionally provide their own authenticated `JsonWebToken` bean can opt out of the built-in startup check:
+
+```properties
+quarkus.multi-tenant.http.jwt.skip-startup-check=true
+```
+
+## Synchronous background work
+
+For scheduled jobs, startup observers, maintenance callbacks, or other synchronous work outside the HTTP pipeline, use `TenantContextRunner`:
+
+```java
+@Inject
+TenantContextRunner tenantRunner;
+
+void refreshTenant() {
+    tenantRunner.runAsTenant("acme", () -> {
+        // TenantContext contains "acme" here.
+    });
+}
+```
+
+`TenantContextRunner` restores the previous tenant after the callback completes or throws and can temporarily activate the CDI request context when one is not already active.
+
+It is intentionally **synchronous only**. Do not use it to return a `CompletionStage`, Mutiny `Uni`, or other asynchronous result that may outlive the callback.
+
+`TenantContextRunner` is a trusted programmatic boundary and does not apply the HTTP or Kafka tenant-id validation policy automatically. Validate or map externally controlled tenant identifiers before binding them.
+
+## Reactive work within an HTTP request
+
+Reactive does not automatically mean that tenant propagation must be handled manually. While work remains inside the same Quarkus REST request, the request-scoped `TenantContext` is preserved by Quarkus across supported context-aware boundaries.
+
+This includes Mutiny `Uni` pipelines, `@Blocking`/worker-thread dispatch, and `CompletionStage` work executed through a MicroProfile `ManagedExecutor`. A REST endpoint using those mechanisms does not need `TenantContextRunner` just because execution is asynchronous.
+
+This behavior comes from Quarkus REST, Vert.x duplicated context, and SmallRye Context Propagation rather than from a custom propagation mechanism in this extension. Work submitted directly to a raw JDK executor is different and does not automatically inherit the request context.
+
+See `docs/modules/ROOT/pages/index.adoc` for the detailed reactive boundary table and `docs/modules/ROOT/pages/context-propagation.adoc` for the cross-boundary propagation guide.
+
+## Kafka tenant propagation
+
+Add the optional Kafka module:
 
 ```xml
 <dependency>
@@ -171,18 +251,40 @@ Resolver outcomes are explicit:
 </dependency>
 ```
 
-The integration is scoped to SmallRye Reactive Messaging Kafka channels and supports:
+The Kafka integration applies only to SmallRye Reactive Messaging channels backed by the Kafka connector. It does not modify AMQP, in-memory, or custom connectors.
 
-- outgoing tenant-header injection
-- incoming tenant restoration
-- application-supplied header precedence
-- strict missing-tenant policies
-- UTF-8 and tenant-ID validation
-- custom `KafkaTenantValidator` beans
-- reserved tenant-ID protection
-- async ack/nack lifecycle cleanup
+Incoming propagation requires Quarkus Messaging request scope:
 
-### Hibernate ORM
+```properties
+quarkus.messaging.request-scoped.enabled=true
+```
+
+Basic configuration:
+
+```properties
+quarkus.multi-tenant.messaging.kafka.enabled=true
+quarkus.multi-tenant.messaging.kafka.header-name=X-Tenant
+quarkus.multi-tenant.messaging.kafka.fail-on-missing-incoming-tenant=false
+quarkus.multi-tenant.messaging.kafka.fail-on-missing-outgoing-tenant=false
+```
+
+Outgoing messages inherit the current tenant through Kafka record metadata unless application code already supplied the configured tenant header explicitly.
+
+Incoming Kafka tenant identifiers are treated as untrusted external input and are validated before binding:
+
+```properties
+quarkus.multi-tenant.messaging.kafka.tenant-id.validation-enabled=true
+quarkus.multi-tenant.messaging.kafka.tenant-id.max-length=64
+quarkus.multi-tenant.messaging.kafka.tenant-id.pattern=[A-Za-z0-9_-]+
+```
+
+Applications can also provide CDI beans implementing `KafkaTenantValidator` for domain-specific checks.
+
+For complete producer/consumer examples, explicit-header precedence, strict missing-tenant behavior, validation inheritance, custom validators, and nack/failure-strategy guidance, see the [dedicated Kafka tenant propagation guide](docs/modules/ROOT/pages/kafka-tenant-propagation.adoc).
+
+## Hibernate ORM integration
+
+Add the ORM extension:
 
 ```xml
 <dependency>
@@ -192,104 +294,71 @@ The integration is scoped to SmallRye Reactive Messaging Kafka channels and supp
 </dependency>
 ```
 
-The ORM adapter consumes the same `TenantContext` used by the HTTP and Kafka integrations. The default persistence unit is supported automatically, and named multitenant persistence units can opt in explicitly.
+`OrmTenantResolverAdapter` bridges the request-scoped `TenantContext` into Hibernate ORM's tenant resolver SPI.
+
+During ORM bootstrap, the adapter uses an internal reserved bootstrap tenant. During application ORM access, a tenant must already be present in `TenantContext`; otherwise access fails instead of silently selecting another tenant.
+
+The ORM module also contains a legacy `X-Tenant` request filter, enabled by default:
+
+```properties
+quarkus.multi-tenant.orm.header-filter.enabled=true
+```
+
+When HTTP tenant resolution is handled by `quarkus-multitenancy-http` — especially when using `jwt`, `cookie`, or `path` — disable the ORM header filter so both filters do not compete:
+
+```properties
+quarkus.multi-tenant.orm.header-filter.enabled=false
+```
+
+The default Hibernate ORM persistence unit is integrated automatically. To use the same `TenantContext` with named multitenant persistence units, select them explicitly at build time:
 
 ```properties
 quarkus.multi-tenant.orm.named-persistence-units=users,inventory
+
+quarkus.hibernate-orm."users".multitenant=DATABASE
+quarkus.hibernate-orm."inventory".multitenant=SCHEMA
 ```
 
-## Tenant context across boundaries
+Every selected name must identify an existing Hibernate ORM persistence unit with multitenancy enabled. A non-selected, non-multitenant unit receives no adapter. If the application provides its own `TenantResolver` for a persistence unit, that resolver overrides the built-in adapter without creating a CDI ambiguity.
 
-| Boundary | Tenant behavior |
+## Propagation boundaries
+
+| Boundary | Mechanism |
 | --- | --- |
-| HTTP ingress | Resolve and validate through the configured resolver chain |
-| `Uni`, `@Blocking`, `ManagedExecutor` inside the request | Quarkus preserves the active request context |
-| Raw executor | Pass the tenant explicitly or use an appropriate context-aware mechanism |
-| Synchronous background job | `TenantContextRunner.runAsTenant(...)` |
-| Kafka producer | `TenantContext` → Kafka record header |
-| Kafka consumer | Kafka record header → validated `TenantContext` |
-| Hibernate ORM | `TenantContext` → ORM tenant resolver |
+| Incoming HTTP request | HTTP resolver chain |
+| Reactive/worker work inside the same HTTP request | Automatic through supported Quarkus REST / Vert.x / SmallRye context propagation (`Uni`, `@Blocking`, `ManagedExecutor`) |
+| Synchronous scheduled/background callback | `TenantContextRunner.runAsTenant(...)` |
+| Async work after leaving the request or temporary background binding | Use a context-aware mechanism for that framework, or pass the tenant id explicitly |
+| Raw executor submitted to directly | Request context is not propagated automatically |
+| Incoming Kafka message | Kafka record header → validated `TenantContext` |
+| Outgoing Kafka message | Current `TenantContext` → Kafka record header |
+| Hibernate ORM access | `TenantContext` → ORM tenant resolver adapter |
 
-`TenantContext` is request scoped. It is intentionally not a global variable or an ordinary thread-local value.
+`TenantContext` should not be treated as global or as a general-purpose thread-local value. Supported reactive work within an active Quarkus REST request keeps the request context automatically; explicit propagation is needed when work leaves that context or crosses into another integration boundary.
 
-## Tenant-scoped background work
-
-For scheduled jobs, startup observers, maintenance callbacks, or other synchronous work outside HTTP ingress:
-
-```java
-@Inject
-TenantContextRunner tenantRunner;
-
-void refresh() {
-    tenantRunner.runAsTenant("acme", () -> {
-        // TenantContext contains "acme" here.
-    });
-}
-```
-
-The previous tenant is restored after completion or failure. `TenantContextRunner` is deliberately synchronous and rejects asynchronous results that could outlive the temporary binding.
-
-## Security model
-
-Tenant identifiers received from external boundaries are untrusted input.
-
-HTTP and Kafka integrations support configurable maximum length and full-match regular-expression validation. Internal identifiers such as `__bootstrap` are reserved and cannot be selected from external tenant input.
-
-Kafka consumers can also install domain-specific validators:
-
-```java
-@ApplicationScoped
-public class RegisteredTenantValidator implements KafkaTenantValidator {
-
-    @Override
-    public Optional<String> validate(String tenantId) {
-        return tenantExists(tenantId)
-                ? Optional.empty()
-                : Optional.of("tenant is not registered");
-    }
-}
-```
-
-For tenant-sensitive Kafka workloads, strict missing-tenant handling can make the boundary fail closed instead of processing messages without tenant metadata.
-
-## Modules
-
-| Module | Responsibility |
-| --- | --- |
-| `quarkus-multitenancy-core-runtime` | `TenantContext`, resolver contracts, validation foundations, `TenantContextRunner` |
-| `quarkus-multitenancy-http-*` | HTTP resolution and validation |
-| `quarkus-multitenancy-messaging-kafka-*` | Kafka propagation and validation |
-| `quarkus-multitenancy-orm-*` | Hibernate ORM bridge |
-| `quarkus-multitenancy-demo` | Runnable HTTP + PostgreSQL tenant-routing demo |
-
-## Try the demo
+## Quick start
 
 ```bash
-git clone https://github.com/quarkiverse/quarkus-multitenancy.git
-cd quarkus-multitenancy
 mvn clean install
 cd quarkus-multitenancy-demo
 mvn quarkus:dev
 ```
 
-The demo covers header, cookie, path, and default tenant resolution and includes PostgreSQL-backed tests that verify tenant database routing and isolation.
-
 ## Documentation
 
-📚 **[Quarkiverse documentation](https://docs.quarkiverse.io/quarkus-multitenancy/dev/)**
+The Quarkiverse documentation contains the detailed runtime contracts, configuration guidance, and tenant-context propagation behavior:
 
-Start with:
+https://docs.quarkiverse.io/quarkus-multitenancy/dev/
 
-- [Tenant context propagation](docs/modules/ROOT/pages/context-propagation.adoc)
-- [Kafka tenant propagation](docs/modules/ROOT/pages/kafka-tenant-propagation.adoc)
-- [Runtime contracts and validation boundaries](docs/modules/ROOT/pages/runtime-contracts.adoc)
-- [Programmatic tenant connections](docs/modules/ROOT/pages/programmatic-tenant-connections.adoc)
-- [Migration notes for 0.2](docs/modules/ROOT/pages/migration-0.2.adoc)
+Relevant source pages in this repository include:
 
-## Contributing
-
-Issues, bug reports, documentation improvements, and pull requests are welcome. Keep integrations modular, tenant boundaries explicit, and externally controlled tenant identifiers treated as untrusted input.
+- `docs/modules/ROOT/pages/index.adoc`
+- `docs/modules/ROOT/pages/context-propagation.adoc`
+- `docs/modules/ROOT/pages/kafka-tenant-propagation.adoc`
+- `docs/modules/ROOT/pages/runtime-contracts.adoc`
+- `docs/modules/ROOT/pages/programmatic-tenant-connections.adoc`
+- `docs/modules/ROOT/pages/migration-0.2.adoc`
 
 ## License
 
-Licensed under the [Apache License 2.0](LICENSE).
+This project is licensed under the Apache License 2.0.
